@@ -1008,6 +1008,7 @@ function update(p, time) {
   const hEnv = portrait ? ENV_PORT : null;
   if (hoodMat.envMap !== hEnv) { hoodMat.envMap = hEnv; hoodMat.needsUpdate = true; }
   hoodMat.envMapRotation.y = envRot;
+  hoodMat.envMapIntensity = portrait ? 0.3 : 0.6;                 // 세로 화면: 도포 흔적 반사를 절반으로 (유리처럼 보이지 않게)
   const fov = portrait ? 40 : 30;
   if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
   const kd = portrait ? 1.35 + 0.75 * clamp01((p - 2.9) / 0.5) : 1.0;
