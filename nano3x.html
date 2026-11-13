@@ -251,15 +251,15 @@ const grade = new ShaderPass({
 composer.addPass(grade);
 
 // 어두운 스튜디오 반사 환경 (가는 스트립 조명들)
-function makeEnv() {
+function makeEnv(L = 7, W = 0.12, K = 6) {   // L = 천장 스트립 길이 (세로 화면용은 길게 → 캐릭터선 너머 기울어진 면에도 반사가 닿음)
   const env = new THREE.Scene();
   env.background = new THREE.Color(0x000000);
   const strip = (w, h, d, x, y, z, k, rx = 0, ry = 0) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshBasicMaterial({ color: new THREE.Color().setScalar(k) }));
     m.position.set(x, y, z); m.rotation.set(rx, ry, 0); env.add(m);
   };
-  strip(0.12, 0.05, 7, 0, 4, 0, 6);
-  strip(0.08, 0.05, 7, 1.2, 3.6, 0, 4);
+  strip(W, 0.05, L, 0, 4, 0, K);
+  strip(0.08, 0.05, L, 1.2, 3.6, 0, 4);
   strip(0.06, 6, 0.06, -3.6, 1.5, 0.5, 4);
   strip(0.06, 6, 0.06, 3.4, 1.2, -1.2, 3);
   strip(3.0, 0.8, 0.05, 0, 1.6, -4, 0.7);
@@ -267,6 +267,7 @@ function makeEnv() {
   return pm.fromScene(env, 0.02).texture;
 }
 scene.environment = makeEnv();
+const ENV_PORT = makeEnv(24, 0.36, 3.5);                         // 세로 화면 본넷 전용
 scene.environmentIntensity = 1.0;
 
 scene.add(new THREE.HemisphereLight(0xc8ccd6, 0x1a1918, 0.38));
@@ -644,15 +645,21 @@ function shotAt(p, st) {
     if (s3 < 0.40) { const k = ease(seg(s3, 0.22, 0.28)); return { c: lerpV(close.c, follow.c, k), t: lerpV(close.t, follow.t, k) }; }
     const k = ease(seg(s3, 0.40, 0.60)); return { c: lerpV(follow.c, wide.c, k), t: lerpV(follow.t, wide.t, k) };
   }
-  const hoodShot = { c: V(0.13, hoodY(0, 0) + 0.15, 0.27), t: V(0.0, hoodY(0, 0) - 0.005, -0.005) };
+  // 세로 화면: 바르는 방향(x)이 화면 위아래로 놓이도록 +x 쪽 위에서 내려다봄 (거리는 kd 배율이 곱해짐)
+  const PORT = camera.aspect < 1;
+  const hoodShot = PORT
+    ? { c: V(0.135, hoodY(0, 0) + 0.150, 0.028), t: V(0.0, hoodY(0, 0) - 0.004, 0.0) }
+    : { c: V(0.13, hoodY(0, 0) + 0.15, 0.27), t: V(0.0, hoodY(0, 0) - 0.005, -0.005) };
   if (p < 4) {
     const wide = { c: V(st.tip.x + 0.06, (st.tip.y + APPL_FLIP_Y) / 2 + 0.03, 0.17), t: V(st.tip.x - 0.004, (st.tip.y + APPL_FLIP_Y) / 2 - 0.006, 0) };
-    const followA = { c: st.applPos.clone().add(V(0.08, 0.06, 0.20)), t: st.applPos.clone() };
+    const followA = { c: st.applPos.clone().add(PORT ? V(0.11, 0.08, 0.10) : V(0.08, 0.06, 0.20)), t: st.applPos.clone() };
     if (s4 < P4.flipEnd) { const k = ease(s4 / P4.flipEnd); return { c: lerpV(wide.c, followA.c, k), t: lerpV(wide.t, followA.t, k) }; }
     const k = ease(seg(s4, P4.flipEnd, 0.42));
     return { c: lerpV(followA.c, hoodShot.c, k), t: lerpV(followA.t, hoodShot.t, k) };
   }
-  const end = { c: V(0.06, hoodY(0, 0) + 0.22, 0.26), t: V(0.0, hoodY(0, 0) - 0.01, -0.01) };
+  const end = PORT
+    ? { c: V(0.10, hoodY(0, 0) + 0.20, 0.07), t: V(0.0, hoodY(0, 0) - 0.01, 0.0) }
+    : { c: V(0.06, hoodY(0, 0) + 0.22, 0.26), t: V(0.0, hoodY(0, 0) - 0.01, -0.01) };
   const k = ease(seg(s5, 0.0, 0.7));
   return { c: lerpV(hoodShot.c, end.c, k), t: lerpV(hoodShot.t, end.t, k) };
 }
@@ -796,6 +803,12 @@ function update(p, time) {
   const sh = shotAt(p, st);
   const asp = camera.aspect;
   const portrait = asp < 1;
+  // 세로 화면은 본넷을 옆(+x)에서 보므로, 반사 환경도 90° 돌려 PC와 같은 스트립 반사가 도포 흔적 위에 오도록 함
+  const envRot = portrait ? Math.PI / 2 * clamp01((p - 3.0) / 0.4) : 0;
+  if (scene.environmentRotation.y !== envRot) scene.environmentRotation.y = envRot;
+  const hEnv = portrait ? ENV_PORT : null;
+  if (hoodMat.envMap !== hEnv) { hoodMat.envMap = hEnv; hoodMat.needsUpdate = true; }
+  hoodMat.envMapRotation.y = envRot;
   const fov = portrait ? 40 : 30;
   if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
   const kd = portrait ? 1.35 + 0.75 * clamp01((p - 2.9) / 0.5) : 1.0;
