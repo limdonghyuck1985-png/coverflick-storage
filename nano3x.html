@@ -847,7 +847,7 @@ if (EMBED && 'IntersectionObserver' in window) {
 // 홈페이지 쪽 보조 코드(embed 코드에 포함)가 있으면: 연출 화면이 덜 보일 때 화면에 딱 맞게 정렬해 달라고 요청
 let hostReady = false;
 if (EMBED) {
-  addEventListener('message', (e) => { if (e.source !== window.parent || !e.data) return; if (e.data.cf3xHost) hostReady = true; if (e.data.cf3xAligned) visRatio = 1; });
+  addEventListener('message', (e) => { if (e.source !== window.parent || !e.data) return; if (e.data.cf3xHost) { hostReady = true; window.__cfLockSent = undefined; } if (e.data.cf3xAligned) visRatio = 1; });
   let n = 0; const ping = setInterval(() => { if (hostReady || ++n > 20) return clearInterval(ping); parent.postMessage({ cf3x: 'ping' }, '*'); }, 400);
 }
 const needAlign = () => EMBED && visRatio < 0.97;
@@ -972,6 +972,9 @@ renderer.setAnimationLoop((now) => {
   hint.style.opacity = (p < 0.02 && !anim && !jump) ? 1 : 0;
   const pan = EMBED && ((chapter === 6 && !anim && !jump) || (needAlign() && !hostReady));
   if (pan !== document.documentElement.classList.contains('pan')) document.documentElement.classList.toggle('pan', pan);
+  // 홈페이지에 알림: 장면 진행 중에는 바깥 페이지 스크롤을 잠가 달라고 (구매 장면에서는 풀기)
+  const lockHost = EMBED && !(chapter === 6 && !anim && !jump);
+  if (EMBED && hostReady && lockHost !== window.__cfLockSent) { window.__cfLockSent = lockHost; parent.postMessage({ cf3x: 'state', lock: lockHost }, '*'); }
   hint.style.visibility = p < 0.3 ? 'visible' : 'hidden';
   drawParticles(t, 1 - smooth(0.02, 0.55, p));
   composer.render();
