@@ -10,6 +10,9 @@
   #stage canvas { display: block; width: 100%; height: 100%; }
   #story { position: relative; height: 100vh; }
   html.lock, html.lock body { overflow: hidden; }
+  html, body { touch-action: none; overscroll-behavior: none; }   /* 연출 안의 터치는 바깥 페이지를 움직이지 않음 */
+  html.pan, html.pan body { touch-action: pan-y; }                /* 구매 장면: 바깥 페이지(푸터)로 스크롤 허용 */
+  #purchase a { touch-action: manipulation; }
   #dots { position: fixed; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0; z-index: 4; }
   #dots i { display: block; width: 26px; height: 22px; cursor: pointer; position: relative; }
   #dots i::after { content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,.3); transition: background .3s, transform .3s; }
@@ -965,6 +968,8 @@ renderer.setAnimationLoop((now) => {
   for (const k in scr) scr[k].style.opacity = so[k].toFixed(3);
   dots.forEach((d, i) => d.classList.toggle('on', i === Math.min(6, Math.round(p))));
   hint.style.opacity = (p < 0.02 && !anim && !jump) ? 1 : 0;
+  const pan = EMBED && ((chapter === 6 && !anim && !jump) || (needAlign() && !hostReady));
+  if (pan !== document.documentElement.classList.contains('pan')) document.documentElement.classList.toggle('pan', pan);
   hint.style.visibility = p < 0.3 ? 'visible' : 'hidden';
   drawParticles(t, 1 - smooth(0.02, 0.55, p));
   composer.render();
