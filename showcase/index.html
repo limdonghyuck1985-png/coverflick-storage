@@ -43,7 +43,7 @@
   #loading.done { opacity: 0; pointer-events: none; }
   @media (max-width: 760px) {
     .brand { top: 22px; left: 22px; font-size: 12px; } .tag { display: none; }
-    #shade { background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,.85) 66%, #000 78%); }
+    #shade { background: linear-gradient(180deg, rgba(0,0,0,0) 61%, rgba(0,0,0,.85) 70%, #000 80%); }   /* starts below the niche */
     #panel { left: 0; right: 0; top: auto; bottom: 0; width: auto; transform: translateY(24px); padding: 0 26px calc(30px + env(safe-area-inset-bottom)); }
     body.focused.arrived #panel { transform: translateY(0); }
     #panel h1 { font-size: 38px; } #panel .tagline { margin-top: 16px; font-size: 13px; } #panel dl { margin-top: 14px; font-size: 12px; grid-template-columns: 56px 1fr; }
@@ -130,7 +130,11 @@ function draw() {
   const img = levels[L], f = img.width / S.res[0];
   // visible window in full-res coords
   const x0 = view.cx - W / 2 / view.s, y0 = view.cy - H / 2 / view.s;
-  ctx.drawImage(img, x0 * f, y0 * f, W / view.s * f, H / view.s * f, 0, 0, W, H);
+  { // Safari draws nothing when the source rectangle leaves the image, so clip it to the image first
+    const sx = x0 * f, sy = y0 * f, sw = W / view.s * f, sh = H / view.s * f;
+    const ax = Math.max(0, sx), ay = Math.max(0, sy), bx = Math.min(img.width, sx + sw), by = Math.min(img.height, sy + sh);
+    if (bx > ax && by > ay) ctx.drawImage(img, ax, ay, bx - ax, by - ay, (ax - sx) / sw * W, (ay - sy) / sh * H, (bx - ax) / sw * W, (by - ay) / sh * H);
+  }
   // hovered / selected niche: same scene re-rendered with that niche's downlight brighter (wall, product, floor reflection together)
   const put = (levels, r, a) => {
     const w = (r[2] - r[0]) * S.res[0] * view.s, h = (r[3] - r[1]) * S.res[1] * view.s;
