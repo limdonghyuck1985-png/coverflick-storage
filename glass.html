@@ -1296,7 +1296,7 @@ function update(p, time) {
   const fov = driver ? (portrait ? 74 : 50) : (portrait ? 40 : 30);      // 운전석은 넓은 화각
   if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
   const kd = driver ? 1.0 : (portrait ? (p < 4 ? 1.35 + (window.__KDA ?? -0.2) * clamp01((p - 2.9) / 0.5)          // 세로 화면: 바르는 장면은 가깝게 (클로즈업)
-                                             : 1.35 + (window.__KDR ?? 0.55) * ease(seg(p - 4, 0, 0.7))) : 1.0);   // 비 장면은 유리 전체가 보이게 조금 뒤로
+                                             : 1.15 + (window.__KDR ?? 0.75) * ease(seg(p - 4, 0, 0.7))) : 1.0);   // 비 장면은 유리 전체가 보이게 조금 뒤로
   const cpos = sh.t.clone().add(sh.c.clone().sub(sh.t).multiplyScalar(kd));
   camera.position.copy(cpos); camera.lookAt(sh.t);
 
