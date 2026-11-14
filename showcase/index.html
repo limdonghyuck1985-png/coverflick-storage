@@ -26,7 +26,10 @@
   #panel h1 { font-size: clamp(36px, 4.4vw, 64px); font-weight: 800; line-height: 1; letter-spacing: -.01em; }
   #panel h2 { margin-top: 14px; font-size: 13px; font-weight: 400; letter-spacing: .22em; color: #bdb5cb; text-transform: uppercase; }
   #panel .tagline { margin-top: 30px; font-size: 14px; font-weight: 600; letter-spacing: .12em; }
-  #panel p { margin-top: 12px; font: 300 14px/1.8 "Noto Sans KR", sans-serif; color: #a99fbb; }
+  #panel p { margin-top: 14px; font: 400 14px/1.8 "Noto Sans KR", sans-serif; color: #d9d3e3; white-space: pre-line; }
+  #panel .more { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 12px 26px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #f4f2f7; font: 500 13px "Noto Sans KR", sans-serif; text-decoration: none; letter-spacing: .04em; transition: background .25s, border-color .25s; }
+  #panel .more:hover { background: rgba(179,140,255,.18); border-color: rgba(179,140,255,.6); }
+  #panel .more span { transition: transform .25s; } #panel .more:hover span { transform: translateX(4px); }
   #panel dl { margin-top: 26px; display: grid; grid-template-columns: 72px 1fr; gap: 9px 14px; font: 400 13px "Noto Sans KR", sans-serif; }
   #panel dt { color: #8d84a0; } #panel dd { color: #ece8f2; }
   .btn { font: inherit; color: #f4f2f7; background: rgba(12,11,14,.6); border: 1px solid rgba(255,255,255,.22); cursor: pointer;
@@ -46,7 +49,7 @@
     #shade { background: linear-gradient(180deg, rgba(0,0,0,0) 61%, rgba(0,0,0,.85) 70%, #000 80%); }   /* starts below the niche */
     #panel { left: 0; right: 0; top: auto; bottom: 0; width: auto; transform: translateY(24px); padding: 0 26px calc(30px + env(safe-area-inset-bottom)); }
     body.focused.arrived #panel { transform: translateY(0); }
-    #panel h1 { font-size: 38px; } #panel .tagline { margin-top: 16px; font-size: 13px; } #panel dl { margin-top: 14px; font-size: 12px; grid-template-columns: 56px 1fr; }
+    #panel h1 { font-size: 38px; } #panel .tagline { margin-top: 16px; font-size: 13px; } #panel dl { display: none; } #panel p { font-size: 12.5px; line-height: 1.65; margin-top: 10px; } #panel .more { margin-top: 14px; padding: 9px 20px; font-size: 12px; } #panel h2 { margin-top: 8px; } #panel .line { margin-bottom: 8px; }
     #back { top: 16px; right: 16px; padding: 8px 14px; font-size: 12px; }
     #nav { left: 12px; right: 12px; bottom: auto; top: 30%; justify-content: space-between; }
   }
@@ -58,7 +61,7 @@
 <div id="shade"></div>
 <div class="brand">COVER <b>FLICK</b></div>
 <aside id="panel"><div class="line" id="p-line"></div><h1 id="p-name"></h1><h2 id="p-sub"></h2>
-  <div class="tagline" id="p-tag"></div><p id="p-desc"></p><dl id="p-spec"></dl></aside>
+  <div class="tagline" id="p-tag"></div><p id="p-desc"></p><dl id="p-spec"></dl><a class="more" id="p-more" target="_top" rel="noopener">더보기 <span>→</span></a></aside>
 <button class="btn" id="back">← 전체 보기</button>
 <div id="nav"><button class="btn" id="prev" aria-label="이전 제품">‹</button><button class="btn" id="next" aria-label="다음 제품">›</button></div>
 <div id="hint">제품에 마우스를 올리거나 클릭해 보세요</div>
@@ -66,13 +69,13 @@
 const A = {"pc": {"res": [5760, 3240], "base": "img/pc_base.webp", "prods": [{"key": "2X", "rect": [0.2265990674495697, 0.41502809524536133, 0.2839204967021942, 0.5680767297744751], "layers": [{"src": "img/pc_ref_2X.webp", "crop": [0.21458333333333332, 0.5873456790123457, 0.29583333333333334, 0.9996913580246913]}, {"src": "img/pc_hov_2X.webp", "crop": [0.21458333333333332, 0.39598765432098765, 0.29583333333333334, 0.5996913580246913]}, {"src": "img/pc_hi_2X.webp", "crop": [0.21458333333333332, 0.39580246913580247, 0.29583333333333334, 0.5874074074074074], "hi": 1}]}, {"key": "3X", "rect": [0.31279444694519043, 0.41502809524536133, 0.36574944853782654, 0.5680767297744751], "layers": [{"src": "img/pc_ref_3X.webp", "crop": [0.30069444444444443, 0.5873456790123457, 0.3776041666666667, 0.9996913580246913]}, {"src": "img/pc_hov_3X.webp", "crop": [0.30069444444444443, 0.39598765432098765, 0.3776041666666667, 0.5996913580246913]}, {"src": "img/pc_hi_3X.webp", "crop": [0.3007638888888889, 0.39580246913580247, 0.3776388888888889, 0.5874074074074074], "hi": 1}]}, {"key": "GlassCoating", "rect": [0.39898979663848877, 0.41502809524536133, 0.4475783407688141, 0.5680767297744751], "layers": [{"src": "img/pc_ref_GlassCoating.webp", "crop": [0.38697916666666665, 0.5873456790123457, 0.4595486111111111, 0.9996913580246913]}, {"src": "img/pc_hov_GlassCoating.webp", "crop": [0.38697916666666665, 0.39598765432098765, 0.4595486111111111, 0.5996913580246913]}, {"src": "img/pc_hi_GlassCoating.webp", "crop": [0.3869444444444444, 0.39580246913580247, 0.45958333333333334, 0.5874074074074074], "hi": 1}]}, {"key": "LeatherCoating", "rect": [0.4851851761341095, 0.41502809524536133, 0.5309764742851257, 0.5680767297744751], "layers": [{"src": "img/pc_ref_LeatherCoating.webp", "crop": [0.4730902777777778, 0.5873456790123457, 0.5428819444444445, 0.9996913580246913]}, {"src": "img/pc_hov_LeatherCoating.webp", "crop": [0.4730902777777778, 0.39598765432098765, 0.5428819444444445, 0.5996913580246913]}, {"src": "img/pc_hi_LeatherCoating.webp", "crop": [0.4731944444444444, 0.39580246913580247, 0.5429861111111111, 0.5874074074074074], "hi": 1}]}, {"key": "Glow", "rect": [0.5655302405357361, 0.2709733843803406, 0.6524820923805237, 0.5680767297744751], "layers": [{"src": "img/pc_ref_Glow.webp", "crop": [0.55, 0.5987654320987654, 0.66875, 1.0]}, {"src": "img/pc_hov_Glow.webp", "crop": [0.55, 0.2518518518518518, 0.66875, 0.6111111111111112]}]}, {"key": "Assemble", "rect": [0.6768079400062561, 0.2709733843803406, 0.7739279866218567, 0.5680767297744751], "layers": [{"src": "img/pc_ref_Assemble.webp", "crop": [0.6647569444444444, 0.5873456790123457, 0.7857638888888889, 0.9996913580246913]}, {"src": "img/pc_hov_Assemble.webp", "crop": [0.6647569444444444, 0.2518518518518518, 0.7857638888888889, 0.5996913580246913]}]}]}, "m": {"res": [3120, 6752], "base": "img/m_base.webp", "prods": [{"key": "2X", "rect": [0.06840715557336807, 0.345639705657959, 0.21518738567829132, 0.4541202187538147], "layers": [{"src": "img/m_ref_2X.webp", "crop": [0.023717948717948717, 0.4727488151658768, 0.25416666666666665, 1.0]}, {"src": "img/m_hov_2X.webp", "crop": [0.023717948717948717, 0.3335308056872038, 0.25416666666666665, 0.4786729857819905]}, {"src": "img/m_hi_2X.webp", "crop": [0.023974358974358973, 0.3334123222748815, 0.25435897435897437, 0.4728080568720379], "hi": 1}]}, {"key": "3X", "rect": [0.23961754143238068, 0.345639705657959, 0.3723253905773163, 0.4541202187538147], "layers": [{"src": "img/m_ref_3X.webp", "crop": [0.1967948717948718, 0.4727488151658768, 0.4112179487179487, 1.0]}, {"src": "img/m_hov_3X.webp", "crop": [0.1967948717948718, 0.3335308056872038, 0.4112179487179487, 0.4786729857819905]}, {"src": "img/m_hi_3X.webp", "crop": [0.1967948717948718, 0.3334123222748815, 0.4114102564102564, 0.4728080568720379], "hi": 1}]}, {"key": "GlassCoating", "rect": [0.06962719559669495, 0.4742547273635864, 0.21592649817466736, 0.5792432129383087], "layers": [{"src": "img/m_ref_GlassCoating.webp", "crop": [0.025, 0.5996741706161137, 0.2548076923076923, 0.9998518957345972]}, {"src": "img/m_hov_GlassCoating.webp", "crop": [0.025, 0.4622334123222749, 0.2548076923076923, 0.6055983412322274]}, {"src": "img/m_hi_GlassCoating.webp", "crop": [0.025256410256410258, 0.4622037914691943, 0.255, 0.5997037914691943], "hi": 1}]}, {"key": "LeatherCoating", "rect": [0.24035359919071198, 0.4742547273635864, 0.3726567029953003, 0.5792432129383087], "layers": [{"src": "img/m_ref_LeatherCoating.webp", "crop": [0.19743589743589743, 0.5996741706161137, 0.4115384615384615, 0.9998518957345972]}, {"src": "img/m_hov_LeatherCoating.webp", "crop": [0.19743589743589743, 0.4622334123222749, 0.4115384615384615, 0.6055983412322274]}, {"src": "img/m_hi_LeatherCoating.webp", "crop": [0.1976923076923077, 0.4622037914691943, 0.4117948717948718, 0.5997037914691943], "hi": 1}]}, {"key": "Glow", "rect": [0.4322735369205475, 0.3753848075866699, 0.6461465954780579, 0.5792432129383087], "layers": [{"src": "img/m_ref_Glow.webp", "crop": [0.39166666666666666, 0.5996741706161137, 0.6871794871794872, 0.9998518957345972]}, {"src": "img/m_hov_Glow.webp", "crop": [0.39166666666666666, 0.36329976303317535, 0.6871794871794872, 0.6055983412322274]}]}, {"key": "Assemble", "rect": [0.6886341571807861, 0.3753848075866699, 0.9313107132911682, 0.5792432129383087], "layers": [{"src": "img/m_ref_Assemble.webp", "crop": [0.65, 0.5996741706161137, 0.975, 0.9998518957345972]}, {"src": "img/m_hov_Assemble.webp", "crop": [0.65, 0.36329976303317535, 0.975, 0.6055983412322274]}]}]}};
 const INFO = {
   '2X': { line: 'CERAMIC COATING', name: '2X', sub: 'Ceramic Coating', tag: 'SUPER HYBRID', vol: '30mL', type: '세라믹 코팅제' },
-  '3X': { line: 'CERAMIC COATING', name: '3X', sub: 'Ceramic Coating', tag: 'NANO SUPER HYBRID', vol: '30mL', type: '세라믹 코팅제' },
+  '3X': { line: 'CERAMIC COATING', name: 'NANO 3X', sub: 'Ceramic Coating', tag: 'NANO SUPER HYBRID', vol: '30mL', type: '세라믹 코팅제' },
   'GlassCoating': { line: 'GLASS CARE', name: 'Glass Coating', sub: 'Rain Shield', tag: 'OPTICAL BOOST', vol: '30mL', type: '유리 코팅제' },
   'LeatherCoating': { line: 'LEATHER CARE', name: 'Leather Coating', sub: 'Against Well-Worn', tag: 'SERUM', vol: '30mL', type: '가죽 코팅제' },
   'Glow': { line: 'QUICK DETAILER', name: 'Glow', sub: 'Ceramic Quick Detailer', tag: 'THE ONLY SOLUTION TO PROTECT VEHICLE', vol: '500mL', type: '특수목적코팅제 · 자동차용(외부용)' },
   'Assemble': { line: 'LEATHER CARE', name: 'Assemble', sub: 'Leather Care · Cleaner Conditioner', tag: 'THE ONLY SOLUTION TO PROTECT VEHICLE', vol: '500mL', type: '특수목적코팅제 · 자동차용(실내용)' },
 };
-const DESC = '제품 설명 문구가 들어갈 자리입니다.';
+const COPY = {"Glow": {"desc": "유리막 회복과 방오 성능 강화,\n단순 코팅을 넘은 고기능성 유지제.\n고순도 SiO₂ 기반으로 내화학성, 내오염성,\n슬릭한 발수감이 제공합니다.\n프리미엄 디테일링 샵에서 검증된 제품,\n애프터 케어에 최적화!", "url": "https://www.coverflick.com/glow"}, "Assemble": {"desc": "3중 작용 포뮬러로 실내 모든 소재를\n한번에 관리할 수 있는\n올인원 솔루션.\npH밸런싱+보습 코팅+UV 차단,\n정전기 방지까지 고려된 과학적 설계.\n은은한 뉴카 가죽향과 친환경 성분으로\n사람과 반려 동물에도 안전!", "url": "https://www.coverflick.com/assemble"}, "3X": {"desc": "그래핀 벌집구조 기반, 진짜 나노 기술의\n차세대 세라믹 코팅제.\n초고경도 10H, 내화학성, 초미세 고분자\n막으로 차를 완벽하게 보호.\n작업성, 발수력, 내오염성 모두 기존 한계를\n뛰어 넘는 성능!", "url": "https://www.coverflick.com/nano3x"}, "2X": {"desc": "고광택, 고경도, 발수력까지!\n차량 도장의 깊은 광택을 끌어올리고\n스크래치를 방지합니다.\n자외선 차단과 오염방지로\n컨디션을 오래 유지하며,\n세차 주기를 줄여주는 효과까지!", "url": "https://www.coverflick.com/2x"}, "LeatherCoating": {"desc": "잔사 없는 작업성, 오염·UV·마모 방지,\n가죽 본연의 질감을 유지합니다.\n천연/인조 가죽 모두 사용가능,\n장기간 보습과 색상 유지에 탁월\n인체 무해, 내열·내산성 우수,\n고급 가죽 보호 솔루션!", "url": "https://www.coverflick.com/leathercoat"}, "GlassCoating": {"desc": "불소 NO, 신소재 기반 초발수력으로\n맑은 시야를 제공합니다.\n내구성과 시인성, 고속 주행 시\n물방울 튕김 효과 탁월.\n스크래치 최소화, 주행 시\n안정성 확보에 도움!", "url": "https://www.coverflick.com/glasscoating"}};
 const $ = id => document.getElementById(id);
 const cv = $('cv'), ctx = cv.getContext('2d');
 const isMobile = () => innerWidth <= 760 || innerHeight > innerWidth * 1.15;
@@ -105,7 +108,12 @@ function focusView(i) {
   const W = S.res[0], H = S.res[1], r = S.prods[i].rect;
   const rw = (r[2] - r[0]) * W, rh = (r[3] - r[1]) * H, rcx = (r[0] + r[2]) / 2 * W, rcy = (r[1] + r[3]) / 2 * H;
   let s, sx, sy;
-  if (isMobile()) { s = Math.min(innerHeight * .5 / rh, innerWidth * .78 / rw); sx = innerWidth / 2; sy = innerHeight * .34; }
+  if (isMobile()) {   // niche fills the space above the text panel, whatever the phone height / text length
+    const top = 66, ph = $('panel').offsetHeight || innerHeight * .4, avail = Math.max(160, innerHeight - ph - top - 14);
+    s = Math.min(avail / rh, innerWidth * .78 / rw); sx = innerWidth / 2; sy = top + avail / 2;
+    const pt = (innerHeight - ph) / innerHeight * 100;
+    $('shade').style.background = `linear-gradient(180deg, rgba(0,0,0,0) ${pt - 6}%, rgba(0,0,0,.85) ${pt + 3}%, #000 ${pt + 12}%)`;
+  }
   else { s = Math.min(innerHeight * .78 / rh, innerWidth * .42 / rw); sx = innerWidth * .68; sy = innerHeight * .5; }
   return { cx: rcx - (sx - innerWidth / 2) / s, cy: rcy - (sy - innerHeight / 2) / s, s };
 }
@@ -202,7 +210,7 @@ function setGoals() {
 function fill(p) {
   const d = INFO[p.key];
   $('p-line').textContent = d.line; $('p-name').textContent = d.name; $('p-sub').textContent = d.sub;
-  $('p-tag').textContent = d.tag; $('p-desc').textContent = DESC;
+  $('p-tag').textContent = d.tag; $('p-desc').textContent = COPY[p.key].desc; $('p-more').href = COPY[p.key].url;
   $('p-spec').innerHTML = `<dt>용량</dt><dd>${d.vol}</dd><dt>구분</dt><dd>${d.type}</dd>`;
 }
 function open(i) {
