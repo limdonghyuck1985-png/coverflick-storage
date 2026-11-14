@@ -645,13 +645,15 @@ const gUV = (x, z) => { const v = GV0 - z / GSL; return [-x / wsHW(v), v]; };
 const glassPt = (x, z) => { const [u, v] = gUV(x, z); return wsW(u, v); };
 const glassN = (x, z) => { const [u, v] = gUV(x, z); return wsNormal(u, v); };
 const G_C0 = glassPt(0, 0), G_N0 = glassN(0, 0);
+const RAIN_CAM_PC = V(0.0, 0.45, 1.60);                              // PC 비 장면 카메라 (유리 중심 기준, 정면)
 // 고급 스튜디오 평면 소프트박스 (유리·물방울에 반사되는 큰 사각 조명) — 비 장면 카메라에서 유리 위쪽을 대각선으로 가로지르게 배치
 const SB = (() => {
-  const cam = G_C0.clone().add(V(-0.46, 0.30, 1.22));
-  const P = wsW(0.10, 0.62), N = wsNormal(0.10, 0.62);
+  const cam = G_C0.clone().add(RAIN_CAM_PC);
+  const su = window.__SBU ?? 0.20, sv = window.__SBV ?? 0.55;
+  const P = wsW(su, sv), N = wsNormal(su, sv);
   const d = P.clone().sub(cam).normalize(), R = d.clone().addScaledVector(N, -2 * d.dot(N)).normalize();
   let A = new THREE.Vector3().crossVectors(R, V(0, 1, 0)).normalize(), B = new THREE.Vector3().crossVectors(A, R).normalize();
-  const rot = 0.38, ca = Math.cos(rot), sa = Math.sin(rot);
+  const rot = window.__SBRot ?? -1.0, ca = Math.cos(rot), sa = Math.sin(rot);
   const A2 = A.clone().multiplyScalar(ca).addScaledVector(B, sa), B2 = B.clone().multiplyScalar(ca).addScaledVector(A, -sa);
   return { uSBD: { value: R }, uSBA: { value: A2 }, uSBB: { value: B2 }, uSBH: { value: new THREE.Vector4(0.40, 0.11, 0.03, 2.3) } };
 })();
@@ -1138,7 +1140,7 @@ function shotAt(p, st) {
   }
   // 비 장면: 같은 앞유리 클로즈업에서 조금 뒤·위로 → 곡면 유리가 더 보이게
   const rainShot = PORT ? { c: G_C0.clone().add(window.__RSC || V(0.0, 0.42, 1.25)), t: G_C0.clone().add(V(0.0, 0.02, 0.0)) }   // 세로 화면: 유리 정면 → 가운데 정렬
-                       : { c: G_C0.clone().add(V(-0.46, 0.30, 1.22)), t: G_C0.clone().add(V(0.0, 0.03, 0.0)) };
+                       : { c: G_C0.clone().add(window.__RSP || RAIN_CAM_PC), t: G_C0.clone().add(V(0.0, window.__RTY ?? 0.03, 0.0)) };   // PC도 유리 정면 → 화면 정중앙
   const k = ease(seg(s5, 0.0, 0.7));
   return { c: lerpV(hoodShot.c, rainShot.c, k), t: lerpV(hoodShot.t, rainShot.t, k) };
 }
@@ -1402,7 +1404,7 @@ const blocks = [0, 1, 2, 3, 4, 5].map(k => document.getElementById('b' + k));
 const cards = [...document.querySelectorAll('#b1 .card')];
 function textO(k, p) { return (k === 0 ? 1 : smooth(k - 0.14, k - 0.01, p)) * (1 - smooth(k + 0.01, k + 0.12, p)); }
 // 화면 배치: PC는 문구 반대편으로 3D를 옮기고, 모바일은 3D를 위로 올림
-const SX_PC = [0.19, 0.0, -0.18, 0.25, -0.16, 0.0], SY_PC = [0, 0, 0, 0, 0, -0.12];
+const SX_PC = [0.19, 0.0, -0.18, 0.25, -0.16, 0.0], SY_PC = [0, 0, 0, 0, 0, -0.05];
 const SY_M = [0.15, 0.27, 0.17, 0.17, 0.15, 0.16], SX_M = [0, 0, 0, 0, 0, 0];
 const SCRIM_PC = [['l'], [], ['r'], ['l'], ['r'], ['t']];
 const scr = { l: document.getElementById('scL'), r: document.getElementById('scR'), t: document.getElementById('scT'), b: document.getElementById('scB') };
@@ -1448,7 +1450,7 @@ renderer.setAnimationLoop((now) => {
   stepAnim(nowMs); stepJump(nowMs);
   const p = P;
   const portrait = W / H < 1;
-  const sx = portrait ? pick(window.__SXM || SX_M, p) : pick(SX_PC, p), sy = portrait ? pick(window.__SYM || SY_M, p) : pick(SY_PC, p);
+  const sx = portrait ? pick(window.__SXM || SX_M, p) : pick(SX_PC, p), sy = portrait ? pick(window.__SYM || SY_M, p) : pick(window.__SYP || SY_PC, p);
   camera.setViewOffset(W, H, -sx * W, sy * H, W, H);
   hoodU.uTime.value = t; hexU.uTime.value = t; grade.uniforms.uTime.value = t % 10;
   update(Math.min(p, 5), t);
