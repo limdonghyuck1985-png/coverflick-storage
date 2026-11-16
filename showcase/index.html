@@ -26,7 +26,7 @@
   #panel h1 { font-size: clamp(36px, 4.4vw, 64px); font-weight: 800; line-height: 1; letter-spacing: -.01em; }
   #panel h2 { margin-top: 14px; font-size: 13px; font-weight: 400; letter-spacing: .22em; color: #bdb5cb; text-transform: uppercase; }
   #panel .tagline { margin-top: 30px; font-size: 14px; font-weight: 600; letter-spacing: .12em; }
-  #panel p { margin-top: 14px; font: 400 14px/1.8 "Noto Sans KR", sans-serif; color: #d9d3e3; white-space: pre-line; }
+  #panel p { margin-top: 14px; font: 400 14px/1.8 "Noto Sans KR", sans-serif; color: #d9d3e3; white-space: pre-line; word-break: keep-all; }
   #panel .more { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 12px 26px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #f4f2f7; font: 500 13px "Noto Sans KR", sans-serif; text-decoration: none; letter-spacing: .04em; transition: background .25s, border-color .25s; }
   #panel .more:hover { background: rgba(179,140,255,.18); border-color: rgba(179,140,255,.6); }
   #panel .more span { transition: transform .25s; } #panel .more:hover span { transform: translateX(4px); }
@@ -47,7 +47,7 @@
     #shade { background: linear-gradient(180deg, rgba(0,0,0,0) 61%, rgba(0,0,0,.85) 70%, #000 80%); }   /* starts below the niche */
     #panel { left: 0; right: 0; top: auto; bottom: 0; width: auto; transform: translateY(24px); padding: 0 26px calc(30px + env(safe-area-inset-bottom)); }
     body.focused.arrived #panel { transform: translateY(0); }
-    #panel h1 { font-size: 38px; } #panel .tagline { margin-top: 16px; font-size: 13px; } #panel dl { display: none; } #panel p { font-size: 12.5px; line-height: 1.65; margin-top: 10px; } #panel .more { margin-top: 14px; padding: 9px 20px; font-size: 12px; } #panel h2 { margin-top: 8px; } #panel .line { margin-bottom: 8px; }
+    #panel h1 { font-size: 38px; } #panel .tagline { margin-top: 16px; font-size: 13px; } #panel dl { display: none; } #panel p { white-space: normal; font-size: 12.5px; line-height: 1.65; margin-top: 10px; } #panel .more { margin-top: 14px; padding: 9px 20px; font-size: 12px; } #panel h2 { margin-top: 8px; } #panel .line { margin-bottom: 8px; }
     #back { top: 16px; right: 16px; padding: 8px 14px; font-size: 12px; }
     #nav { left: 12px; right: 12px; bottom: auto; top: 30%; justify-content: space-between; }
   }
@@ -107,7 +107,7 @@
 <div id="nav"><button class="btn" id="prev" aria-label="이전 제품">‹</button><button class="btn" id="next" aria-label="다음 제품">›</button></div>
 <div id="hint">제품에 마우스를 올리거나 클릭해 보세요</div>
 <script>
-const A = {"pc": {"res": [5760, 3240], "base": "img/pc_base.webp", "prods": [{"key": "2X", "rect": [0.2265990674495697, 0.41502809524536133, 0.2839204967021942, 0.5680767297744751], "layers": [{"src": "img/pc_ref_2X.webp", "crop": [0.21458333333333332, 0.5873456790123457, 0.29583333333333334, 0.9996913580246913]}, {"src": "img/pc_hov_2X.webp", "crop": [0.21458333333333332, 0.39598765432098765, 0.29583333333333334, 0.5996913580246913]}, {"src": "img/pc_hi_2X.webp", "crop": [0.21458333333333332, 0.39580246913580247, 0.29583333333333334, 0.5874074074074074], "hi": 1}]}, {"key": "3X", "rect": [0.31279444694519043, 0.41502809524536133, 0.36574944853782654, 0.5680767297744751], "layers": [{"src": "img/pc_ref_3X.webp", "crop": [0.30069444444444443, 0.5873456790123457, 0.3776041666666667, 0.9996913580246913]}, {"src": "img/pc_hov_3X.webp", "crop": [0.30069444444444443, 0.39598765432098765, 0.3776041666666667, 0.5996913580246913]}, {"src": "img/pc_hi_3X.webp", "crop": [0.3007638888888889, 0.39580246913580247, 0.3776388888888889, 0.5874074074074074], "hi": 1}]}, {"key": "GlassCoating", "rect": [0.39898979663848877, 0.41502809524536133, 0.4475783407688141, 0.5680767297744751], "layers": [{"src": "img/pc_ref_GlassCoating.webp", "crop": [0.38697916666666665, 0.5873456790123457, 0.4595486111111111, 0.9996913580246913]}, {"src": "img/pc_hov_GlassCoating.webp", "crop": [0.38697916666666665, 0.39598765432098765, 0.4595486111111111, 0.5996913580246913]}, {"src": "img/pc_hi_GlassCoating.webp", "crop": [0.3869444444444444, 0.39580246913580247, 0.45958333333333334, 0.5874074074074074], "hi": 1}]}, {"key": "LeatherCoating", "rect": [0.4851851761341095, 0.41502809524536133, 0.5309764742851257, 0.5680767297744751], "layers": [{"src": "img/pc_ref_LeatherCoating.webp", "crop": [0.4730902777777778, 0.5873456790123457, 0.5428819444444445, 0.9996913580246913]}, {"src": "img/pc_hov_LeatherCoating.webp", "crop": [0.4730902777777778, 0.39598765432098765, 0.5428819444444445, 0.5996913580246913]}, {"src": "img/pc_hi_LeatherCoating.webp", "crop": [0.4731944444444444, 0.39580246913580247, 0.5429861111111111, 0.5874074074074074], "hi": 1}]}, {"key": "Glow", "rect": [0.5655302405357361, 0.2709733843803406, 0.6524820923805237, 0.5680767297744751], "layers": [{"src": "img/pc_ref_Glow.webp", "crop": [0.55, 0.5987654320987654, 0.66875, 1.0]}, {"src": "img/pc_hov_Glow.webp", "crop": [0.55, 0.2518518518518518, 0.66875, 0.6111111111111112]}]}, {"key": "Assemble", "rect": [0.6768079400062561, 0.2709733843803406, 0.7739279866218567, 0.5680767297744751], "layers": [{"src": "img/pc_ref_Assemble.webp", "crop": [0.6647569444444444, 0.5873456790123457, 0.7857638888888889, 0.9996913580246913]}, {"src": "img/pc_hov_Assemble.webp", "crop": [0.6647569444444444, 0.2518518518518518, 0.7857638888888889, 0.5996913580246913]}]}]}, "m": {"res": [3120, 6752], "base": "img/m_base.webp", "prods": [{"key": "2X", "rect": [0.06840715557336807, 0.345639705657959, 0.21518738567829132, 0.4541202187538147], "layers": [{"src": "img/m_ref_2X.webp", "crop": [0.023717948717948717, 0.4727488151658768, 0.25416666666666665, 1.0]}, {"src": "img/m_hov_2X.webp", "crop": [0.023717948717948717, 0.3335308056872038, 0.25416666666666665, 0.4786729857819905]}, {"src": "img/m_hi_2X.webp", "crop": [0.023974358974358973, 0.3334123222748815, 0.25435897435897437, 0.4728080568720379], "hi": 1}]}, {"key": "3X", "rect": [0.23961754143238068, 0.345639705657959, 0.3723253905773163, 0.4541202187538147], "layers": [{"src": "img/m_ref_3X.webp", "crop": [0.1967948717948718, 0.4727488151658768, 0.4112179487179487, 1.0]}, {"src": "img/m_hov_3X.webp", "crop": [0.1967948717948718, 0.3335308056872038, 0.4112179487179487, 0.4786729857819905]}, {"src": "img/m_hi_3X.webp", "crop": [0.1967948717948718, 0.3334123222748815, 0.4114102564102564, 0.4728080568720379], "hi": 1}]}, {"key": "GlassCoating", "rect": [0.06962719559669495, 0.4742547273635864, 0.21592649817466736, 0.5792432129383087], "layers": [{"src": "img/m_ref_GlassCoating.webp", "crop": [0.025, 0.5996741706161137, 0.2548076923076923, 0.9998518957345972]}, {"src": "img/m_hov_GlassCoating.webp", "crop": [0.025, 0.4622334123222749, 0.2548076923076923, 0.6055983412322274]}, {"src": "img/m_hi_GlassCoating.webp", "crop": [0.025256410256410258, 0.4622037914691943, 0.255, 0.5997037914691943], "hi": 1}]}, {"key": "LeatherCoating", "rect": [0.24035359919071198, 0.4742547273635864, 0.3726567029953003, 0.5792432129383087], "layers": [{"src": "img/m_ref_LeatherCoating.webp", "crop": [0.19743589743589743, 0.5996741706161137, 0.4115384615384615, 0.9998518957345972]}, {"src": "img/m_hov_LeatherCoating.webp", "crop": [0.19743589743589743, 0.4622334123222749, 0.4115384615384615, 0.6055983412322274]}, {"src": "img/m_hi_LeatherCoating.webp", "crop": [0.1976923076923077, 0.4622037914691943, 0.4117948717948718, 0.5997037914691943], "hi": 1}]}, {"key": "Glow", "rect": [0.4322735369205475, 0.3753848075866699, 0.6461465954780579, 0.5792432129383087], "layers": [{"src": "img/m_ref_Glow.webp", "crop": [0.39166666666666666, 0.5996741706161137, 0.6871794871794872, 0.9998518957345972]}, {"src": "img/m_hov_Glow.webp", "crop": [0.39166666666666666, 0.36329976303317535, 0.6871794871794872, 0.6055983412322274]}]}, {"key": "Assemble", "rect": [0.6886341571807861, 0.3753848075866699, 0.9313107132911682, 0.5792432129383087], "layers": [{"src": "img/m_ref_Assemble.webp", "crop": [0.65, 0.5996741706161137, 0.975, 0.9998518957345972]}, {"src": "img/m_hov_Assemble.webp", "crop": [0.65, 0.36329976303317535, 0.975, 0.6055983412322274]}]}]}};
+const A = {"pc": {"res": [5760, 3240], "base": "img/pc_base.webp", "prods": [{"key": "2X", "rect": [0.2265990674495697, 0.41502809524536133, 0.2839204967021942, 0.5680767297744751], "layers": [{"src": "img/pc_ref_2X.webp", "crop": [0.21458333333333332, 0.5873456790123457, 0.29583333333333334, 0.9996913580246913]}, {"src": "img/pc_hov_2X.webp", "crop": [0.21458333333333332, 0.39598765432098765, 0.29583333333333334, 0.5996913580246913]}, {"src": "img/pc_hi_2X.webp", "crop": [0.21458333333333332, 0.39580246913580247, 0.29583333333333334, 0.5874074074074074], "hi": 1}]}, {"key": "3X", "rect": [0.31279444694519043, 0.41502809524536133, 0.36574944853782654, 0.5680767297744751], "layers": [{"src": "img/pc_ref_3X.webp", "crop": [0.30069444444444443, 0.5873456790123457, 0.3776041666666667, 0.9996913580246913]}, {"src": "img/pc_hov_3X.webp", "crop": [0.30069444444444443, 0.39598765432098765, 0.3776041666666667, 0.5996913580246913]}, {"src": "img/pc_hi_3X.webp", "crop": [0.3007638888888889, 0.39580246913580247, 0.3776388888888889, 0.5874074074074074], "hi": 1}]}, {"key": "GlassCoating", "rect": [0.39898979663848877, 0.41502809524536133, 0.4475783407688141, 0.5680767297744751], "layers": [{"src": "img/pc_ref_GlassCoating.webp", "crop": [0.38697916666666665, 0.5873456790123457, 0.4595486111111111, 0.9996913580246913]}, {"src": "img/pc_hov_GlassCoating.webp", "crop": [0.38697916666666665, 0.39598765432098765, 0.4595486111111111, 0.5996913580246913]}, {"src": "img/pc_hi_GlassCoating.webp", "crop": [0.3869444444444444, 0.39580246913580247, 0.45958333333333334, 0.5874074074074074], "hi": 1}]}, {"key": "LeatherCoating", "rect": [0.4851851761341095, 0.41502809524536133, 0.5309764742851257, 0.5680767297744751], "layers": [{"src": "img/pc_ref_LeatherCoating.webp", "crop": [0.4730902777777778, 0.5873456790123457, 0.5428819444444445, 0.9996913580246913]}, {"src": "img/pc_hov_LeatherCoating.webp", "crop": [0.4730902777777778, 0.39598765432098765, 0.5428819444444445, 0.5996913580246913]}, {"src": "img/pc_hi_LeatherCoating.webp", "crop": [0.4731944444444444, 0.39580246913580247, 0.5429861111111111, 0.5874074074074074], "hi": 1}]}, {"key": "Glow", "rect": [0.5655302405357361, 0.2709733843803406, 0.6524820923805237, 0.5680767297744751], "layers": [{"src": "img/pc_ref_Glow.webp", "crop": [0.55, 0.5987654320987654, 0.66875, 1.0]}, {"src": "img/pc_hov_Glow.webp", "crop": [0.55, 0.2518518518518518, 0.66875, 0.6111111111111112]}]}, {"key": "Assemble", "rect": [0.6768079400062561, 0.2709733843803406, 0.7739279866218567, 0.5680767297744751], "layers": [{"src": "img/pc_ref_Assemble.webp", "crop": [0.6647569444444444, 0.5873456790123457, 0.7857638888888889, 0.9996913580246913]}, {"src": "img/pc_hov_Assemble.webp", "crop": [0.6647569444444444, 0.2518518518518518, 0.7857638888888889, 0.5996913580246913]}]}], "dim": "img/pc_dim.webp"}, "m": {"res": [3120, 6752], "base": "img/m_base.webp", "prods": [{"key": "2X", "rect": [0.06840715557336807, 0.345639705657959, 0.21518738567829132, 0.4541202187538147], "layers": [{"src": "img/m_ref_2X.webp", "crop": [0.023717948717948717, 0.4727488151658768, 0.25416666666666665, 1.0]}, {"src": "img/m_hov_2X.webp", "crop": [0.023717948717948717, 0.3335308056872038, 0.25416666666666665, 0.4786729857819905]}, {"src": "img/m_hi_2X.webp", "crop": [0.023974358974358973, 0.3334123222748815, 0.25435897435897437, 0.4728080568720379], "hi": 1}]}, {"key": "3X", "rect": [0.23961754143238068, 0.345639705657959, 0.3723253905773163, 0.4541202187538147], "layers": [{"src": "img/m_ref_3X.webp", "crop": [0.1967948717948718, 0.4727488151658768, 0.4112179487179487, 1.0]}, {"src": "img/m_hov_3X.webp", "crop": [0.1967948717948718, 0.3335308056872038, 0.4112179487179487, 0.4786729857819905]}, {"src": "img/m_hi_3X.webp", "crop": [0.1967948717948718, 0.3334123222748815, 0.4114102564102564, 0.4728080568720379], "hi": 1}]}, {"key": "GlassCoating", "rect": [0.06962719559669495, 0.4742547273635864, 0.21592649817466736, 0.5792432129383087], "layers": [{"src": "img/m_ref_GlassCoating.webp", "crop": [0.025, 0.5996741706161137, 0.2548076923076923, 0.9998518957345972]}, {"src": "img/m_hov_GlassCoating.webp", "crop": [0.025, 0.4622334123222749, 0.2548076923076923, 0.6055983412322274]}, {"src": "img/m_hi_GlassCoating.webp", "crop": [0.025256410256410258, 0.4622037914691943, 0.255, 0.5997037914691943], "hi": 1}]}, {"key": "LeatherCoating", "rect": [0.24035359919071198, 0.4742547273635864, 0.3726567029953003, 0.5792432129383087], "layers": [{"src": "img/m_ref_LeatherCoating.webp", "crop": [0.19743589743589743, 0.5996741706161137, 0.4115384615384615, 0.9998518957345972]}, {"src": "img/m_hov_LeatherCoating.webp", "crop": [0.19743589743589743, 0.4622334123222749, 0.4115384615384615, 0.6055983412322274]}, {"src": "img/m_hi_LeatherCoating.webp", "crop": [0.1976923076923077, 0.4622037914691943, 0.4117948717948718, 0.5997037914691943], "hi": 1}]}, {"key": "Glow", "rect": [0.4322735369205475, 0.3753848075866699, 0.6461465954780579, 0.5792432129383087], "layers": [{"src": "img/m_ref_Glow.webp", "crop": [0.39166666666666666, 0.5996741706161137, 0.6871794871794872, 0.9998518957345972]}, {"src": "img/m_hov_Glow.webp", "crop": [0.39166666666666666, 0.36329976303317535, 0.6871794871794872, 0.6055983412322274]}]}, {"key": "Assemble", "rect": [0.6886341571807861, 0.3753848075866699, 0.9313107132911682, 0.5792432129383087], "layers": [{"src": "img/m_ref_Assemble.webp", "crop": [0.65, 0.5996741706161137, 0.975, 0.9998518957345972]}, {"src": "img/m_hov_Assemble.webp", "crop": [0.65, 0.36329976303317535, 0.975, 0.6055983412322274]}]}], "dim": "img/m_dim.webp"}};
 const INFO = {
   '2X': { line: 'CERAMIC COATING', name: '2X', sub: 'Ceramic Coating', tag: 'SUPER HYBRID', vol: '30mL', type: '세라믹 코팅제' },
   '3X': { line: 'CERAMIC COATING', name: 'NANO 3X', sub: 'Ceramic Coating', tag: 'NANO SUPER HYBRID', vol: '30mL', type: '세라믹 코팅제' },
@@ -122,7 +122,8 @@ const cv = $('cv'), ctx = cv.getContext('2d');
 const isMobile = () => innerWidth <= 760 || innerHeight > innerWidth * 1.15;
 
 let S = null;                                  // current scene set (pc or m)
-const lv = { pc: null, m: null };              // mip levels per scene
+const lv = { pc: null, m: null }, lvd = { pc: null, m: null };   // base / dimmed base (all downlights at half)
+let dimA = 0;              // mip levels per scene
 function load(src) { return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; }); }
 async function mips(img, minW) {
   try { if (img.decode) await img.decode(); } catch (e) {}
@@ -150,7 +151,7 @@ function focusView(i) {
   const rw = (r[2] - r[0]) * W, rh = (r[3] - r[1]) * H, rcx = (r[0] + r[2]) / 2 * W, rcy = (r[1] + r[3]) / 2 * H;
   let s, sx, sy;
   if (isMobile()) {   // niche fills the space above the text panel, whatever the phone height / text length
-    const top = 66, ph = $('panel').offsetHeight || innerHeight * .4, avail = Math.max(160, innerHeight - ph - top - 14);
+    const top = 66, ph = panelHeight(S.prods[i]) || innerHeight * .4, avail = Math.max(160, innerHeight - ph - top - 14);
     s = Math.min(avail / rh, innerWidth * .78 / rw); sx = innerWidth / 2; sy = top + avail / 2;
     const pt = (innerHeight - ph) / innerHeight * 100;
     $('shade').style.background = `linear-gradient(180deg, rgba(0,0,0,0) ${pt - 6}%, rgba(0,0,0,.85) ${pt + 3}%, #000 ${pt + 12}%)`;
@@ -174,7 +175,13 @@ function draw() {
   if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-  const levels = lv[S.id], k0 = levels[0].width / S.res[0], need = view.s * dpr / k0;   // screen px per base px
+  drawBase(lv[S.id], 1, dpr, W, H);
+  if (dimA > .003 && lvd[S.id]) drawBase(lvd[S.id], dimA, dpr, W, H);   // other niches at half light while a product is selected
+  const x0 = view.cx - W / 2 / view.s, y0 = view.cy - H / 2 / view.s;
+  drawRest(dpr, W, H, x0, y0);
+}
+function drawBase(levels, a, dpr, W, H) {
+  const k0 = levels[0].width / S.res[0], need = view.s * dpr / k0;   // screen px per base px
   let L = 0; while (L + 1 < levels.length && need <= 1 / Math.pow(2, L + 1) * 1.05) L++;
   const img = levels[L], f = img.width / S.res[0];
   // visible window in full-res coords
@@ -182,8 +189,12 @@ function draw() {
   { // Safari draws nothing when the source rectangle leaves the image, so clip it to the image first
     const sx = x0 * f, sy = y0 * f, sw = W / view.s * f, sh = H / view.s * f;
     const ax = Math.max(0, sx), ay = Math.max(0, sy), bx = Math.min(img.width, sx + sw), by = Math.min(img.height, sy + sh);
+    ctx.globalAlpha = a;
     if (bx > ax && by > ay) ctx.drawImage(img, ax, ay, bx - ax, by - ay, (ax - sx) / sw * W, (ay - sy) / sh * H, (bx - ax) / sw * W, (by - ay) / sh * H);
+    ctx.globalAlpha = 1;
   }
+}
+function drawRest(dpr, W, H, x0, y0) {
   // hovered / selected niche: same scene re-rendered with that niche's downlight brighter (wall, product, floor reflection together)
   const put = (levels, r, a) => {
     const w = (r[2] - r[0]) * S.res[0] * view.s, h = (r[3] - r[1]) * S.res[1] * view.s;
@@ -230,6 +241,7 @@ function tick(now) {
     dirty = true;
   }
   const dt = Math.min(.1, (now - (tick.last || now)) / 1000) / SLOW; tick.last = now;
+  { const g = focus >= 0 ? 1 : 0; if (Math.abs(g - dimA) > .002) { dimA += (g - dimA) * (1 - Math.exp(-dt / .3)); dirty = true; } else dimA = g; }
   for (const p of S.prods) {
     if (anim && anim.swap && anim.swap.includes(p.key)) continue;
     const g = alphaGoal[p.key] || 0, c = alpha[p.key] || 0;
@@ -249,14 +261,22 @@ let closing = -1;
 function setGoals() {
   S.prods.forEach((p, i) => alphaGoal[p.key] = (focus >= 0 ? i === focus : (i === hover || i === closing)) ? HOVER_A : 0);
 }
-function fill(p) {
-  const d = INFO[p.key];
-  $('p-line').textContent = d.line; $('p-name').textContent = d.name; $('p-sub').textContent = d.sub;
-  $('p-tag').textContent = d.tag; $('p-desc').textContent = COPY[p.key].desc; $('p-more').href = COPY[p.key].url;
-  $('p-spec').innerHTML = `<dt>용량</dt><dd>${d.vol}</dd><dt>구분</dt><dd>${d.type}</dd>`;
+function fill(p, root) {
+  const d = INFO[p.key], q = id => (root || document).querySelector('#' + id);
+  q('p-line').textContent = d.line; q('p-name').textContent = d.name; q('p-sub').textContent = d.sub;
+  q('p-tag').textContent = d.tag; q('p-desc').textContent = COPY[p.key].desc; q('p-more').href = COPY[p.key].url;
+  q('p-spec').innerHTML = `<dt>용량</dt><dd>${d.vol}</dd><dt>구분</dt><dd>${d.type}</dd>`;
+}
+function panelHeight(p) {   // height the text panel will have for product p (measured on a hidden copy)
+  const c = $('panel').cloneNode(true); fill(p, c);
+  c.style.visibility = 'hidden'; c.style.transition = 'none'; c.style.opacity = '0'; document.body.appendChild(c);
+  const h = c.offsetHeight; c.remove(); return h;
 }
 function open(i) {
-  const was = focus; focus = i; hover = -1; fill(S.prods[i]);
+  const was = focus; focus = i; hover = -1;
+  clearTimeout(open.t);
+  if (was >= 0 && was !== i) open.t = setTimeout(() => { if (focus === i) fill(S.prods[i]); }, 520 * SLOW);   // after the old text has faded out
+  else fill(S.prods[i]);
   document.body.classList.add('focused'); document.body.classList.remove('arrived');
   setGoals();
   if (was >= 0 && was !== i) go(focusView(i), 1100, null, 0, [S.prods[was].key, S.prods[i].key]);
@@ -292,6 +312,8 @@ async function start(id) {
   if (!A[id]) id = 'pc';
   const a = A[id];
   if (!lv[id]) lv[id] = await mips(await load(a.base), 900);
+  if (a.dim && !lvd[id]) lvd[id] = await mips(await load(a.dim), 900);
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
   document.querySelectorAll('.tag').forEach(t => t.remove());
   S = { id, res: a.res, prods: a.prods.map(p => ({ ...p })) };
   await Promise.all(S.prods.map(async p => { p.L = await Promise.all(p.layers.map(async l => ({ crop: l.crop, hi: l.hi, img: await mips(await load(l.src), 160) }))); }));
