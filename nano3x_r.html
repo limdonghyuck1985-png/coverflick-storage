@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COVER FLICK NANO 3X</title>
+<style>
+  html, body { margin: 0; background: #141312; color: #cfcfd4; font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; }
+  #story { position: relative; height: 100vh; }
+  html.lock, html.lock body { overflow: hidden; }
+  html, body { touch-action: none; overscroll-behavior: none; }   /* 연출 안의 터치는 바깥 페이지를 움직이지 않음 */
+  html.pan, html.pan body { touch-action: pan-y; }                /* 구매 장면: 바깥 페이지(푸터)로 스크롤 허용 */
+  #purchase a { touch-action: manipulation; }
+  #dots { position: fixed; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0; z-index: 4; }
+  #dots i { display: block; width: 26px; height: 22px; cursor: pointer; position: relative; }
+  #dots i::after { content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,.3); transition: background .3s, transform .3s; }
+  #dots i:hover::after { background: rgba(255,255,255,.75); transform: scale(1.3); }
+  #dots i.on::after { background: #f1efe9; transform: scale(1.6); }
+  #fader { position: fixed; inset: 0; background: #0c0b0a; opacity: 0; pointer-events: none; z-index: 6; }
+  #particles { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+  /* 문구 */
+  #copy { position: fixed; inset: 0; pointer-events: none; z-index: 3; --hl: #b98cff; }
+  .scrim { position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: 0; }
+  .scrim.l { background: linear-gradient(90deg, rgba(12,11,10,.72) 0%, rgba(12,11,10,.35) 38%, rgba(12,11,10,0) 60%); }
+  .scrim.r { background: linear-gradient(270deg, rgba(12,11,10,.72) 0%, rgba(12,11,10,.35) 38%, rgba(12,11,10,0) 60%); }
+  .scrim.t { background: linear-gradient(180deg, rgba(12,11,10,.7) 0%, rgba(12,11,10,.25) 30%, rgba(12,11,10,0) 48%); }
+  .scrim.b { background: linear-gradient(0deg, rgba(12,11,10,.9) 0%, rgba(12,11,10,.6) 38%, rgba(12,11,10,0) 62%); }
+  .blk { position: absolute; opacity: var(--o, 0); translate: 0 calc((1 - var(--o, 0)) * 18px); }
+  #copy, #purchase { text-shadow: 0 1px 2px rgba(0,0,0,.75), 0 0 14px rgba(0,0,0,.6), 0 0 32px rgba(0,0,0,.45); }
+  .badge, .btn.solid { text-shadow: none; }
+  .blk.left  { left: 7vw;  top: 50%; transform: translateY(-50%); width: min(40vw, 560px); }
+  .blk.right { right: 7vw; top: 50%; transform: translateY(-50%); width: min(40vw, 560px); }
+  .blk.top   { left: 50%; top: 8vh; transform: translateX(-50%); width: min(72vw, 860px); text-align: center; }
+  .kick { font: 600 11px/1 "Manrope", sans-serif; letter-spacing: .32em; color: rgba(241,239,233,.55); margin-bottom: 18px; }
+  .hero { font: 800 clamp(56px, 8.4vw, 140px)/.92 "Manrope", sans-serif; letter-spacing: -.01em; color: #f1efe9; margin: 0; }
+  .hero-sub { font: 600 clamp(14px, 1.45vw, 22px)/1.3 "Manrope", sans-serif; letter-spacing: .28em; color: var(--hl); margin: 22px 0 26px; }
+  .lead { font: 300 clamp(14px, 1.15vw, 18px)/1.75 "Noto Sans KR", sans-serif; color: #dedbd5; margin: 0; }
+  .lead b, .body b { color: #f1efe9; font-weight: 500; }
+  .hl { color: var(--hl); font-weight: 500; }
+  h2.ttl { font: 600 clamp(24px, 2.6vw, 42px)/1.3 "Noto Sans KR", sans-serif; color: #f1efe9; margin: 0 0 18px; letter-spacing: -.01em; }
+  h2.ttl .hl { font-weight: 600; }
+  .body { font: 300 clamp(13px, 1vw, 15.5px)/1.8 "Noto Sans KR", sans-serif; color: #dedbd5; margin: 0 0 12px; }
+  .item { padding: 18px 0 18px; border-top: 1px solid rgba(255,255,255,.09); }
+  .item:last-child { border-bottom: 1px solid rgba(255,255,255,.09); }
+  .item .no { font: 700 12px/1 "Manrope", sans-serif; color: var(--hl); letter-spacing: .15em; margin-bottom: 9px; }
+  .item h3 { font: 500 clamp(16px, 1.35vw, 20px)/1.4 "Noto Sans KR", sans-serif; color: #f1efe9; margin: 0 0 8px; }
+  .item p { font: 400 clamp(12.5px, .92vw, 14.5px)/1.75 "Noto Sans KR", sans-serif; color: #dedbd5; margin: 0; }
+  .feat { position: absolute; top: 50%; transform: translateY(-50%); width: min(25vw, 330px); display: flex; flex-direction: column; gap: 14px; }
+  .feat.l { left: 5vw; } .feat.r { right: 5vw; }
+  .card { opacity: var(--o, 0); translate: 0 calc((1 - var(--o, 0)) * 14px); padding: 16px 18px; border: 1px solid rgba(255,255,255,.09); background: rgba(20,19,18,.42); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .card .no { font: 700 11px/1 "Manrope", sans-serif; color: var(--hl); letter-spacing: .15em; margin-bottom: 8px; }
+  .card h3 { font: 500 16px/1.4 "Noto Sans KR", sans-serif; color: #f1efe9; margin: 0 0 6px; }
+  .card p { font: 400 13px/1.65 "Noto Sans KR", sans-serif; color: #dedbd5; margin: 0; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 22px; }
+  .stat { padding: 16px 14px 14px; border-top: 1px solid rgba(255,255,255,.18); background: rgba(20,19,18,.35); }
+  .stat .v { font: 800 clamp(26px, 2.6vw, 40px)/1 "Manrope", sans-serif; color: #f1efe9; }
+  .stat .v small { font-size: .45em; color: var(--hl); margin-left: 2px; vertical-align: top; }
+  .stat .k { font: 600 10px/1 "Manrope", sans-serif; letter-spacing: .22em; color: rgba(241,239,233,.55); margin-top: 10px; }
+  /* 구매 */
+  #purchase { position: fixed; inset: 0; z-index: 3; display: grid; place-items: center; padding: 8vh 6vw; box-sizing: border-box;
+    background: rgba(12,11,10,.78); opacity: var(--o, 0); pointer-events: none; }
+  #purchase.on { pointer-events: auto; }
+  #purchase .buy { translate: 0 calc((1 - var(--o, 0)) * 24px); }
+  .buy { width: min(760px, 100%); text-align: center; }
+  .badge { display: inline-block; font: 700 11px/1 "Manrope", sans-serif; letter-spacing: .25em; color: #141312; background: #f1efe9; padding: 8px 14px; margin-bottom: 22px; }
+  .buy .name { font: 800 clamp(34px, 4vw, 56px)/1 "Manrope", sans-serif; color: #f1efe9; margin: 0 0 8px; }
+  .buy .sub { font: 500 clamp(16px, 1.4vw, 20px)/1.4 "Noto Sans KR", sans-serif; color: #f1efe9; margin: 0 0 22px; }
+  .buy .note { font: 300 13px/1.7 "Noto Sans KR", sans-serif; color: #b4b1ab; margin: 18px 0 34px; }
+  .btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { font: 700 13px/1 "Manrope", sans-serif; letter-spacing: .22em; padding: 18px 28px; text-decoration: none; transition: background .25s, color .25s; }
+  .btn.ghost { color: #f1efe9; border: 1px solid rgba(255,255,255,.35); }
+  .btn.ghost:hover { background: rgba(255,255,255,.08); }
+  .btn.solid { color: #141312; background: #f1efe9; border: 1px solid #f1efe9; }
+  .btn.solid:hover { background: #fff; }
+  /* 모바일: 3D는 위, 문구는 아래 */
+  @media (max-aspect-ratio: 1/1) {
+    .blk.left, .blk.right, .blk.top { left: 6vw; right: 6vw; top: auto; bottom: 6vh; transform: none; width: auto; text-align: left; }
+    .hero { font-size: clamp(46px, 15vw, 84px); }
+    .hero-sub { letter-spacing: .18em; margin: 14px 0 16px; font-size: 13px; }
+    h2.ttl { font-size: clamp(20px, 6vw, 28px); }
+    .item { padding: 12px 0; } .item p { font-size: 12.5px; }
+    .feat { top: auto; transform: none; width: auto; gap: 8px; }
+    .feat.l { left: 5vw; right: 51vw; bottom: 5vh; } .feat.r { left: 51vw; right: 5vw; bottom: 5vh; }
+    .card { padding: 10px 11px; } .card h3 { font-size: 13.5px; margin-bottom: 4px; } .card p { font-size: 11px; line-height: 1.55; }
+    .stats { gap: 8px; } .stat { padding: 12px 10px; } .stat .k { font-size: 8.5px; letter-spacing: .16em; }
+    #dots { right: 10px; }
+    #b0.blk { bottom: calc(4vh + 76px); }          /* 첫 화면: 문구를 올려 아래 스크롤 안내와 겹치지 않게 */
+    #hint { bottom: 14px; gap: 6px; }
+  }
+  #hint { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); z-index: 4; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: opacity .5s; pointer-events: none;
+    font: 700 11px/1 "Manrope", sans-serif; letter-spacing: .38em; padding-left: .38em; color: #f1efe9; text-shadow: 0 1px 3px rgba(0,0,0,.8), 0 0 16px rgba(0,0,0,.6); }
+  #hint::before { content: ''; position: absolute; left: 50%; top: 50%; width: 220px; height: 150px; transform: translate(-50%, -50%); background: radial-gradient(closest-side, rgba(10,10,10,.55), rgba(10,10,10,0)); z-index: -1; }
+  #hint .mouse { width: 22px; height: 34px; border: 1.6px solid rgba(241,239,233,.9); border-radius: 12px; position: relative; box-shadow: 0 0 14px rgba(0,0,0,.5); }
+  #hint .mouse::after { content: ''; position: absolute; left: 50%; top: 7px; width: 3px; height: 7px; margin-left: -1.5px; border-radius: 2px; background: #f1efe9; animation: wheel 1.8s ease-in-out infinite; }
+  #hint .chev { width: 10px; height: 10px; border-right: 1.6px solid #f1efe9; border-bottom: 1.6px solid #f1efe9; transform: rotate(45deg); margin-top: -4px; animation: chev 1.8s ease-in-out infinite; }
+  #hint .chev + .chev { margin-top: -6px; animation-delay: .18s; }
+  #hint .swipe { display: none; }
+  @media (pointer: coarse) { #hint .lbl { display: none; } }
+  @keyframes wheel { 0% { transform: translateY(0); opacity: 1; } 60% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 0; } }
+  @keyframes chev { 0%, 100% { opacity: .2; transform: rotate(45deg) translate(-2px, -2px); } 50% { opacity: 1; transform: rotate(45deg) translate(2px, 2px); } }
+  @media (pointer: coarse) { #hint .mouse { display: none; } #hint .swipe { display: block; } }
+  #stage canvas { position: absolute; inset: 0; }
+  #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 8; background: #0e0d0c; transition: opacity .7s; }
+  #loading .lt { font: 700 11px/1 "Manrope", sans-serif; letter-spacing: .38em; padding-left: .38em; color: rgba(241,239,233,.7); }
+  #loading .pct { font: 800 30px/1 "Manrope", sans-serif; color: #f1efe9; letter-spacing: .04em; min-width: 3.4em; text-align: center; }
+  #loading .bar { width: min(240px, 52vw); height: 1px; background: rgba(255,255,255,.14); overflow: hidden; }
+  #loading .bar i { display: block; height: 100%; width: 0; background: #b98cff; transition: width .2s; }
+  #loading .err { font: 400 12px/1.6 "Noto Sans KR", sans-serif; color: #b4b1ab; display: none; text-align: center; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="stage"></div>
+<div id="fader"></div>
+<canvas id="particles"></canvas>
+<div class="scrim l" id="scL"></div><div class="scrim r" id="scR"></div><div class="scrim t" id="scT"></div><div class="scrim b" id="scB"></div>
+<div id="copy">
+  <!-- 001 INTRO -->
+  <div class="blk left" id="b0">
+    <h1 class="hero">NANO 3X</h1>
+    <div class="hero-sub">CERAMIC COATING SUPER HYBRID</div>
+    <p class="lead">이제 코팅도 <span class="hl">기술</span>로 말합니다.<br>당신의 차를 <span class="hl">'완벽'</span>으로 완성하세요.</p>
+  </div>
+  <!-- 002 FEATURES -->
+  <div id="b1">
+    <div class="feat l">
+      <div class="card"><div class="no">01</div><h3>내스크래치성</h3><p>표면을 매끄럽게 강화해<br>미세 스크래치를 차단합니다.</p></div>
+      <div class="card"><div class="no">02</div><h3>광학 선명도</h3><p>굴절을 균일하게 정돈해<br>색감과 광택을 더 선명하게.</p></div>
+      <div class="card"><div class="no">03</div><h3>페인트 내구성</h3><p>도장 표면을 견고히 보호해<br>광택을 오랫동안 유지합니다.</p></div>
+    </div>
+    <div class="feat r">
+      <div class="card"><div class="no">04</div><h3>방오성</h3><p>강력한 방오 장벽을 형성하여<br>일상의 오염과 이염이<br>스며들 틈을 주지 않습니다.</p></div>
+      <div class="card"><div class="no">05</div><h3>편리한 차량 관리</h3><p>가벼운 타월링만으로도<br>실내의 쾌적한 컨디션을<br>오래도록 지속시킬 수 있습니다.</p></div>
+      <div class="card"><div class="no">06</div><h3>UV 저항력</h3><p>강한 자외선에 의한<br>내장재의 변색과 노화를<br>방어하여<br>선명한 색감을 지켜냅니다.</p></div>
+    </div>
+  </div>
+  <!-- 003 DETAIL 01~02 -->
+  <div class="blk right" id="b2">
+    <div class="item"><div class="no">01</div><h3>불순물을 첨가하지 않은 세라믹 코팅</h3>
+      <p>불순물로 흉내 내어 만들어낸 그래핀 벌집구조가 아닌 <span class="hl">순수 벌집구조</span>를 형성하여 지금까지 경험하지 못한 쉬팅, 슬릭, 내화학성, 작업성을 경험해 보세요.</p></div>
+    <div class="item"><div class="no">02</div><h3>차세대 트렌디함을 가진 CERAMIC COATING</h3>
+      <p>기존의 세라믹 코팅제의 한계점을 뛰어넘는 기술로 폴리실라잔, 실란, 나노실리카에 불순물을 첨가하지 않고 배합하여 <span class="hl">체인이 가장 짧은 구조</span>를 형성합니다. 초미세 나노입자로 융합되어 보다 밀도 있는 그래핀 벌집구조(HONEYCOMB LATTICE)를 구현시킵니다.</p></div>
+  </div>
+  <!-- 003 DETAIL 03~04 -->
+  <div class="blk left" id="b3">
+    <div class="item"><div class="no">03</div><h3>최첨단 기술력으로 만든 하이브리드 소재</h3>
+      <p>COVER FLICK만의 독자적인 기술로 라디칼 반응을 통한 빠른 중화작용을 형성합니다. 각기 다른 경화 온도로 순차별 경화를 하는 하이브리드 소재가 적용되어(내화학성, 고온안전성, 내UV성, 내마모성) <span class="hl">순수 고경도 10H</span>를 발현 시킵니다.</p></div>
+    <div class="item"><div class="no">04</div><h3>기존의 편견을 깬 프리미엄 세라믹 코팅제</h3>
+      <p>촘촘한 초미세 고분자로 표면의 부식 또는 오염물이 고착되지 않게 막아주고, <span class="hl">실런트 계열보다 강도는 강하지만 오염물(이염)에 약하다는 편견을 깰 수 있는</span> 세라믹 코팅제 입니다.</p></div>
+  </div>
+  <!-- 004 PROTECTION -->
+  <div class="blk right" id="b4">
+    <h2 class="ttl">오염물이 고착되지 않게 막아주는<br><span class="hl">초미세 고분자 코팅제.</span></h2>
+    <p class="body">차량 도장, 플라스틱, PPF, 랩핑에 <b>본딩이 보다 자유롭고</b>, 표면에 이염 방지 기능을 극대화하여 초저황변 및 표면 스크래치 방어에 도움이 됩니다.</p>
+    <p class="body">초미세 고분자가 표면에 닿는 즉시 강력한 방어막을 형성합니다.</p>
+    <div class="stats">
+      <div class="stat"><div class="v">10<small>H</small></div><div class="k">HIGH HARDNESS</div></div>
+      <div class="stat"><div class="v">99<small>%</small></div><div class="k">ANTI-STAIN</div></div>
+      <div class="stat"><div class="v">SiO<small>2</small></div><div class="k">SUPER HYBRID</div></div>
+    </div>
+  </div>
+  <!-- 005 STRUCTURE -->
+  <div class="blk top" id="b5">
+    <h2 class="ttl">미세 분자가 형성하는<br><span class="hl">완벽한 벌집 구조.</span></h2>
+    <p class="body">분자들이 <b>정확하고 일정한 육각 벌집구조(HONEYCOMB LATTICE)</b>를 형성하여, 어떤 환경에서도 흔들리지 않는 밀도와 안정성을 만들어냅니다.</p>
+  </div>
+</div>
+<!-- 006 PURCHASE -->
+<section id="purchase">
+  <div class="buy">
+    <div class="badge">B2B EXCLUSIVE</div>
+    <h2 class="name">NANO 3X</h2>
+    <div class="sub">사업자 전용 제품</div>
+    <p class="lead">NANO 3X는 <b>전문 디테일러 및 시공점을 위한 사업자 전용</b> 프리미엄 세라믹 코팅제입니다.<br>정확한 시공 노하우와 환경에서만 본래의 성능이 발현되도록 설계되어,<br>일반 구매가 아닌 <b>공식 인증 시공점</b>을 통해서만 제공됩니다.</p>
+    <p class="note">※ 시공을 원하시는 일반 고객님은 가까운 공식 시공점을 찾아 주세요.</p>
+    <div class="btns">
+      <a class="btn ghost" href="https://www.coverflick.com/chemical_map" target="_top" id="findShop">FIND A SHOP →</a>
+      <a class="btn solid" href="https://www.coverflick.com/shop/?idx=17" target="_top" id="buyNow">BUY NOW →</a>
+    </div>
+  </div>
+</section>
+<div id="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div id="hint"><div class="mouse"></div><span class="lbl">SCROLL</span><span class="swipe">SWIPE UP</span><i class="chev"></i><i class="chev"></i></div>
+<div id="loading"><div class="lt">LOADING</div><div class="pct" id="pct">0%</div><div class="bar"><i id="bar"></i></div><div class="err" id="err">이미지를 불러오지 못했습니다.<br>잠시 후 새로고침해 주세요.</div></div>
+<script>
+(() => {
+// ------------------------------------------------------------------ 공통 함수
+const clamp01 = v => Math.min(1, Math.max(0, v));
+const smooth = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const MOBILE = matchMedia('(pointer: coarse)').matches || Math.min(innerWidth, innerHeight) < 700;
+
+// ------------------------------------------------------------------ 렌더링한 프레임 (PC 가로 / 모바일 세로 따로)
+const FRAMES = 151, PER = 30;                       // 장면 사이 30장, 0~150번
+const FRAME_PACK = { pc: 'nano3x_r_pc.bin', m: 'nano3x_r_m.bin' };   // 프레임 151장을 하나로 묶은 파일 (이 html 파일과 같은 위치)
+const PACK_SIZE = { pc: 4583175, m: 5380432 };        // 진행률 표시용 파일 크기
+const VERSION = '20261117-2';                       // 프레임을 새로 올리면 바꿔야 최신 이미지가 보임
+const sets = { pc: null, m: null };
+const want = () => (innerWidth / innerHeight < 1 ? 'm' : 'pc');
+let cur = want();
+
+const loadingEl = document.getElementById('loading'), pctEl = document.getElementById('pct'), barEl = document.getElementById('bar'), errEl = document.getElementById('err');
+function showLoading(on) { loadingEl.style.display = on ? 'flex' : 'none'; loadingEl.style.opacity = on ? 1 : 0; }
+function progress(r) { const v = Math.min(100, Math.round(r * 100)); pctEl.textContent = v + '%'; barEl.style.width = v + '%'; }
+
+async function fetchSet(key) {
+  if (sets[key]) return sets[key];
+  let buf = null;
+  for (let tr = 0; tr < 3 && !buf; tr++) {
+    try {
+      const r = await fetch(FRAME_PACK[key] + '?v=' + VERSION);
+      if (!r.ok) throw 0;
+      const total = +r.headers.get('content-length') || PACK_SIZE[key];
+      if (r.body && r.body.getReader) {
+        const rd = r.body.getReader(), parts = []; let got = 0;
+        for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; if (key === cur) progress(got / total); }
+        buf = new Uint8Array(got); let o = 0; for (const p of parts) { buf.set(p, o); o += p.length; }
+      } else { buf = new Uint8Array(await r.arrayBuffer()); }
+    } catch (e) { buf = null; await new Promise(s => setTimeout(s, 500 * (tr + 1))); }
+  }
+  if (!buf) throw new Error('load');
+  const hl = new DataView(buf.buffer).getUint32(0, true);
+  const idx = JSON.parse(new TextDecoder().decode(buf.subarray(4, 4 + hl)));
+  const base = 4 + hl;
+  const out = idx.map(([o, n]) => new Blob([buf.subarray(base + o, base + o + n)], { type: 'image/webp' }));
+  if (key === cur) progress(1);
+  sets[key] = out; return out;
+}
+
+// 화면에 그릴 때만 압축을 풀고, 최근 것만 기억 (휴대폰 메모리 보호)
+const LIMIT = MOBILE ? 10 : 18;
+const bmp = new Map();                               // 'pc:12' → 풀린 이미지
+const pending = new Map();
+function decode(key, i) {
+  const id = key + ':' + i;
+  if (bmp.has(id)) { const b = bmp.get(id); bmp.delete(id); bmp.set(id, b); return b; }
+  if (!pending.has(id) && sets[key] && sets[key][i]) {
+    const blob = sets[key][i];
+    const pr = ('createImageBitmap' in window ? createImageBitmap(blob) : new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(blob); }))
+      .then(b => {
+        pending.delete(id); bmp.set(id, b);
+        while (bmp.size > LIMIT) { const [k, old] = bmp.entries().next().value; bmp.delete(k); if (old.close) old.close(); }
+      }).catch(() => pending.delete(id));
+    pending.set(id, pr);
+  }
+  return null;
+}
+const decodeNow = (key, i) => { decode(key, i); return pending.get(key + ':' + i) || Promise.resolve(); };
+
+// ------------------------------------------------------------------ 화면 (캔버스에 프레임을 꽉 차게 그림)
+const stage = document.getElementById('stage');
+const cv = document.createElement('canvas'); stage.appendChild(cv);
+const ctx = cv.getContext('2d');
+let W = 1, H = 1, DPR = 1, lastDrawn = null;
+function drawCover(img, alpha) {
+  const iw = img.width, ih = img.height, s = Math.max(cv.width / iw, cv.height / ih);
+  const dw = iw * s, dh = ih * s;
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(img, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
+  ctx.globalAlpha = 1;
+}
+function drawFrame(p, dir) {
+  if (!sets[cur]) return;
+  const f = clamp01(p / 5) * (FRAMES - 1);
+  const i0 = Math.floor(f), i1 = Math.min(FRAMES - 1, i0 + 1), a = f - i0;
+  // 진행 방향으로 몇 장 미리 풀어 둠
+  for (let k = -2; k <= 4; k++) { const j = i0 + k * (dir < 0 ? -1 : 1); if (j >= 0 && j < FRAMES) decode(cur, j); }
+  const b0 = decode(cur, i0), b1 = a > 0.02 ? decode(cur, i1) : null;
+  if (!b0) { if (lastDrawn) drawCover(lastDrawn, 1); return; }
+  drawCover(b0, 1);
+  if (b1) drawCover(b1, a);                          // 두 장 사이를 부드럽게 섞음
+  lastDrawn = b0;
+}
+
+// ------------------------------------------------------------------ 장면 단위 재생 (스크롤 한 번 = 다음 장면 자동 재생)
+// 장면 0~5 = 진행도 0~5에서 멈춰 문구를 보여줌. 장면 6 = 구매 영역
+const DUR = [2.2, 2.2, 2.8, 2.8, 2.4, 1.8];         // 장면 i → i+1 재생 시간(초)
+const BACK = 0.55;
+function travel(t) {
+  const ta = 0.24, vm = 1 / (1 - ta);
+  if (t <= 0) return 0; if (t >= 1) return 1;
+  if (t < ta) { const x = t / ta; return vm * ta * (x * x * x * (1 - 0.5 * x)); }
+  if (t > 1 - ta) { const x = (1 - t) / ta; return 1 - vm * ta * (x * x * x * (1 - 0.5 * x)); }
+  return vm * ta * 0.5 + vm * (t - ta);
+}
+let P = 0, chapter = 0, anim = null, ready = false;
+function goTo(ch) {
+  if (!ready || anim || ch === chapter || ch < 0 || ch > 6) return;
+  const dir = ch > chapter ? 1 : -1, seg0 = dir > 0 ? chapter : ch;
+  anim = { from: chapter, to: ch, t0: performance.now(), dur: DUR[seg0] * (dir > 0 ? 1 : BACK) * 1000 };
+}
+function stepAnim(now) {
+  if (!anim) return;
+  const k = clamp01((now - anim.t0) / anim.dur);
+  P = anim.from + (anim.to - anim.from) * travel(k);
+  if (k >= 1) { P = anim.to; chapter = anim.to; anim = null; }
+}
+// 홈페이지(아임웹)에 iframe으로 들어갔을 때의 처리 - 기존 3X 페이지와 동일
+const EMBED = window.top !== window && !/claude/.test(location.hostname);
+let visRatio = 1;
+if (EMBED && 'IntersectionObserver' in window) {
+  new IntersectionObserver(es => { visRatio = es[0].intersectionRatio; }, { threshold: [0, .25, .5, .75, .9, .95, .97, .99, 1] }).observe(stage);
+}
+let hostReady = false, lockSent;
+if (EMBED) {
+  addEventListener('message', (e) => { if (e.source !== window.parent || !e.data) return; if (e.data.cf3xHost) { hostReady = true; lockSent = undefined; } if (e.data.cf3xAligned) visRatio = 1; });
+  let n = 0; const ping = setInterval(() => { if (hostReady || ++n > 20) return clearInterval(ping); parent.postMessage({ cf3x: 'ping' }, '*'); }, 400);
+}
+let jump = null;
+const needAlign = () => EMBED && visRatio < 0.97;
+const passThrough = (dy) => EMBED && ((needAlign() && !hostReady) || (chapter === 6 && dy > 0 && !anim && !jump));
+let lastWheel = 0, gestureUsed = false, wheelSum = 0;
+addEventListener('wheel', (e) => {
+  const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+  const now = performance.now(), fresh = now - lastWheel > 300; lastWheel = now;
+  if (passThrough(dy)) { gestureUsed = true; return; }
+  e.preventDefault();
+  if (needAlign()) { if (fresh || !gestureUsed) parent.postMessage({ cf3x: 'align' }, '*'); gestureUsed = true; return; }
+  if (fresh) { gestureUsed = false; wheelSum = 0; }
+  if (anim || jump || gestureUsed) return;
+  wheelSum += dy;
+  if (Math.abs(wheelSum) > 12) { gestureUsed = true; goTo(chapter + (wheelSum > 0 ? 1 : -1)); }
+}, { passive: false });
+let ty0 = null;
+addEventListener('touchstart', (e) => { ty0 = e.touches[0].clientY; }, { passive: true });
+addEventListener('touchmove', (e) => {
+  if (ty0 !== null && passThrough(ty0 - e.touches[0].clientY)) return;
+  if (!e.target.closest('a, button')) e.preventDefault();
+}, { passive: false });
+addEventListener('touchend', (e) => {
+  if (ty0 === null) return; const dy = ty0 - e.changedTouches[0].clientY; ty0 = null;
+  if (Math.abs(dy) < 30 || anim || jump || passThrough(dy)) return;
+  if (needAlign()) { parent.postMessage({ cf3x: 'align' }, '*'); return; }
+  goTo(chapter + (dy > 0 ? 1 : -1));
+}, { passive: true });
+addEventListener('keydown', (e) => {
+  const d = ['ArrowDown', 'PageDown', ' '].includes(e.key) ? 1 : ['ArrowUp', 'PageUp'].includes(e.key) ? -1 : 0;
+  if (!d || anim || jump) return; e.preventDefault(); goTo(chapter + d);
+});
+// 오른쪽 점: 누르면 그 장면으로 바로 이동 (잠깐 어두워졌다 밝아짐)
+const fader = document.getElementById('fader');
+function jumpTo(ch) {
+  if (!ready || anim || jump || ch === chapter) return;
+  jump = { to: ch, t0: performance.now(), swapped: false };
+  decode(cur, Math.round(clamp01(ch / 5) * (FRAMES - 1)));
+}
+function stepJump(now) {
+  if (!jump) return;
+  const k = (now - jump.t0) / 900;
+  if (k >= 0.39 && !jump.swapped) { P = jump.to; chapter = jump.to; jump.swapped = true; }
+  const o = k < 0.39 ? smooth(0, 0.39, k) : 1 - smooth(0.39, 1, k);
+  fader.style.opacity = o.toFixed(3);
+  if (k >= 1) { fader.style.opacity = 0; jump = null; }
+}
+document.documentElement.classList.add('lock');
+const dots = [...document.querySelectorAll('#dots i')];
+const DOT_NAME = ['INTRO', 'FEATURES', 'DETAIL', 'DETAIL', 'PROTECTION', 'STRUCTURE', 'PURCHASE'];
+dots.forEach((d, i) => { d.title = DOT_NAME[i]; d.addEventListener('click', () => jumpTo(i)); });
+
+// ------------------------------------------------------------------ 문구 (기존 3X 페이지와 동일)
+const blocks = [0, 1, 2, 3, 4, 5].map(k => document.getElementById('b' + k));
+const cards = [...document.querySelectorAll('#b1 .card')];
+function textO(k, p) { return (k === 0 ? 1 : smooth(k - 0.14, k - 0.01, p)) * (1 - smooth(k + 0.01, k + 0.12, p)); }
+const SCRIM_PC = [['l'], [], ['r'], ['l'], ['r'], ['t']];
+const scr = { l: document.getElementById('scL'), r: document.getElementById('scR'), t: document.getElementById('scT'), b: document.getElementById('scB') };
+
+const pc = document.getElementById('particles'), pctx = pc.getContext('2d');
+const PDPR = Math.min(devicePixelRatio, 2);
+const PARTS = Array.from({ length: MOBILE ? 38 : 70 }, () => ({ x: Math.random(), y: Math.random(), r: 0.5 + Math.random() * 1.4, v: 0.006 + Math.random() * 0.016, ph: Math.random() * 6.28, a: 0.12 + Math.random() * 0.33 }));
+let lastT = 0;
+function drawParticles(t, fade) {
+  const dt = Math.min(0.05, t - lastT); lastT = t;
+  pctx.clearRect(0, 0, pc.width, pc.height);
+  if (fade <= 0.001) return;
+  for (const q of PARTS) {
+    q.y -= q.v * dt; if (q.y < -0.02) { q.y = 1.02; q.x = Math.random(); }
+    const x = (q.x + Math.sin(t * 0.25 + q.ph) * 0.006) * pc.width, y = q.y * pc.height;
+    const a = q.a * (0.65 + 0.35 * Math.sin(t * 0.8 + q.ph * 3)) * fade;
+    const g = pctx.createRadialGradient(x, y, 0, x, y, q.r * 3 * PDPR);
+    g.addColorStop(0, `rgba(240,236,226,${a})`); g.addColorStop(1, 'rgba(240,236,226,0)');
+    pctx.fillStyle = g; pctx.beginPath(); pctx.arc(x, y, q.r * 3 * PDPR, 0, 6.2832); pctx.fill();
+  }
+}
+
+function resize() {
+  W = innerWidth; H = innerHeight; DPR = Math.min(devicePixelRatio || 1, MOBILE ? 2 : 1.5);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  pc.width = W * PDPR; pc.height = H * PDPR;
+  lastDrawn = null;
+  const w = want();
+  if (w !== cur) { cur = w; start(); }               // 가로↔세로가 바뀌면 맞는 프레임 세트로 교체
+}
+addEventListener('resize', resize);
+
+const hint = document.getElementById('hint');
+const purchase = document.getElementById('purchase');
+if (/claude/.test(location.hostname)) document.querySelectorAll('#purchase a').forEach(a => a.removeAttribute('target'));
+
+let prevP = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  stepAnim(now); stepJump(now);
+  const p = P, dir = p - prevP; prevP = p;
+  const portrait = W / H < 1;
+  drawFrame(Math.min(p, 5), dir || (anim ? anim.to - anim.from : 1));
+  const po = smooth(5.35, 6.0, p);
+  purchase.style.setProperty('--o', po.toFixed(3)); purchase.classList.toggle('on', po > 0.9);
+  const so = { l: 0, r: 0, t: 0, b: 0 };
+  blocks.forEach((el, k) => {
+    const o = textO(k, p);
+    el.style.setProperty('--o', o.toFixed(3));
+    if (portrait) so.b = Math.max(so.b, o); else for (const side of SCRIM_PC[k]) so[side] = Math.max(so[side], o);
+  });
+  const out1 = 1 - smooth(1.01, 1.12, p);
+  cards.forEach((c, i) => c.style.setProperty('--o', (smooth(0.30 + i * 0.1, 0.52 + i * 0.1, p) * out1).toFixed(3)));
+  if (portrait) so.b = Math.max(so.b, smooth(0.3, 0.5, p) * out1);
+  for (const k in scr) scr[k].style.opacity = so[k].toFixed(3);
+  dots.forEach((d, i) => d.classList.toggle('on', i === Math.min(6, Math.round(p))));
+  hint.style.opacity = (ready && p < 0.02 && !anim && !jump) ? 1 : 0;
+  hint.style.visibility = p < 0.3 ? 'visible' : 'hidden';
+  const pan = EMBED && ((chapter === 6 && !anim && !jump) || (needAlign() && !hostReady));
+  if (pan !== document.documentElement.classList.contains('pan')) document.documentElement.classList.toggle('pan', pan);
+  const lockHost = EMBED && !(chapter === 6 && !anim && !jump);
+  if (EMBED && hostReady && lockHost !== lockSent) { lockSent = lockHost; parent.postMessage({ cf3x: 'state', lock: lockHost }, '*'); }
+  drawParticles(now / 1000, 1 - smooth(0.02, 0.55, p));
+}
+
+// ------------------------------------------------------------------ 시작: 로딩 화면 → 전부 받기 → 첫 장면 준비 → 시작
+let startToken = 0;
+async function start() {
+  const tok = ++startToken, key = cur;
+  if (!sets[key]) { ready = false; showLoading(true); progress(0); errEl.style.display = 'none'; }
+  try {
+    await fetchSet(key);
+    if (tok !== startToken) return;
+    const i = Math.round(clamp01(Math.min(P, 5) / 5) * (FRAMES - 1));
+    await Promise.all([decodeNow(key, i), decodeNow(key, Math.min(FRAMES - 1, i + 1)), decodeNow(key, Math.min(FRAMES - 1, i + 2))]);
+    if (tok !== startToken) return;
+    ready = true;
+    loadingEl.style.opacity = 0; setTimeout(() => { if (ready) loadingEl.style.display = 'none'; }, 700);
+  } catch (e) {
+    if (tok === startToken) { errEl.style.display = 'block'; }
+  }
+}
+resize(); start(); requestAnimationFrame(frame);
+window.__cfSetProgress = v => { anim = null; jump = null; P = v; chapter = Math.round(v); };
+window.__cfState = () => ({ ready, P, chapter, cur, cached: bmp.size });
+})();
+</script>
+</body>
+</html>
