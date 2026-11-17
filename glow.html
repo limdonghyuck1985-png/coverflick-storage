@@ -340,11 +340,11 @@ function hoodNormal(x, z) {
   const dz = (hoodY(x, z + e) - hoodY(x, z - e)) / (2 * e);
   return new THREE.Vector3(-dx, 1, -dz).normalize();
 }
-function buildHoodGeometry() {
+function buildHoodGeometry(yMin = -600) {                      // yMin(mm): 이 앞쪽(가장자리)에서 판이 끝남
   const xs = []; let x = 0;
   while (x <= 800) { xs.push(x); if (x > 0) xs.push(-x); x += x < 6 ? 0.5 : (x < 60 ? 2 : 6); }
   xs.sort((a, b) => a - b);
-  const ys = []; for (let y = -600; y <= 600; y += 6) ys.push(y);
+  const ys = [yMin]; for (let y = -600; y <= 600; y += 6) if (y > yMin + 0.5) ys.push(y);
   const pos = new Float32Array(xs.length * ys.length * 3);
   let k = 0;
   for (const y of ys) for (const xx of xs) { pos[k++] = xx / 1000; pos[k++] = HOOD_Y0 + hz(xx, y) / 1000; pos[k++] = -y / 1000; }
@@ -898,8 +898,11 @@ slabGeo.setAttribute('color', new THREE.BufferAttribute(slabCol, 3));
 const slab = new THREE.Mesh(slabGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0.35, side: THREE.DoubleSide, envMapIntensity: 0.5 }));
 slab.frustumCulled = false; slab.visible = false; scene.add(slab);
 let lastCut = -1;
+const hoodGeoTrim = buildHoodGeometry(-ZC * 1000);                // 가장자리에서 실제로 끝나는 판 (잘라내기 대신 → 모바일에서 가장자리 픽셀이 반짝이지 않게 매끈하게)
 function setCut(c) {
-  CUT.constant = c;
+  const trim = Math.abs(c - ZC) < 1e-7;
+  hood.geometry = trim ? hoodGeoTrim : hoodGeo;
+  CUT.constant = trim ? 0.9 : c;
   slab.visible = c < 0.6;
   if (!slab.visible || Math.abs(c - lastCut) < 1e-6) return; lastCut = c;
   for (let i = 0; i < SLAB_X.length; i++) { const x = SLAB_X[i], y = hoodY(x, c); for (let r = 0; r < 4; r++) slabPos.set([x, y + SLAB_OFF[r], c], (i * 4 + r) * 3); }
