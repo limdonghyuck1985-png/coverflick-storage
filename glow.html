@@ -1134,6 +1134,10 @@ function update(p, time, praw) {
   camera.position.copy(cpos); camera.lookAt(sh.t);
   { const dd = cpos.distanceTo(sh.t), nn = THREE.MathUtils.clamp(dd * 0.05, 2e-6, 0.005), ff = dd < 0.02 ? 3 : 20;
     if (Math.abs(camera.near - nn) > nn * 0.05 || camera.far !== ff) { camera.near = nn; camera.far = ff; camera.updateProjectionMatrix(); } }
+  if (slab.visible) {                                            // 단면 두께(0.8mm)가 화면에서 2픽셀보다 얇으면 그리지 않음 → 띄엄띄엄 찍히는 점·반짝임 방지
+    const dS = cpos.distanceTo(TE), px = 0.0008 / (2 * dS * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * H * renderer.getPixelRatio();
+    if (px < 2) slab.visible = false;
+  }
   key.target.position.copy(sh.t); key.position.copy(sh.t).addScaledVector(KEY_DIR, 0.8);
   key.target.updateMatrixWorld();
   bokeh.enabled = false;
