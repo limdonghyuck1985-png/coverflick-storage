@@ -194,10 +194,13 @@ const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const MOBILE = matchMedia('(pointer: coarse)').matches || Math.min(innerWidth, innerHeight) < 700;
 
 // ------------------------------------------------------------------ 렌더링한 프레임 (PC 가로 / 모바일 세로 따로)
-const FRAMES = 151, PER = 30;                       // 장면 사이 30장, 0~150번
-const FRAME_PACK = { pc: 'nano3x_r_pc.bin', m: 'nano3x_r_m.bin' };   // 프레임 151장을 하나로 묶은 파일 (이 html 파일과 같은 위치)
-const PACK_SIZE = { pc: 4583175, m: 5380432 };        // 진행률 표시용 파일 크기
-const VERSION = '20261117-2';                       // 프레임을 새로 올리면 바꿔야 최신 이미지가 보임
+// 초당 60장, 원본 장면 길이(2.9 / 2.7 / 6.4 / 6.4 / 4.6초) → 장면 사이 174 / 162 / 384 / 384 / 276장, 총 1381장 (0~1380번)
+const SEG_N = [174, 162, 384, 384, 276];
+const SEG_S = [0, 174, 336, 720, 1104, 1380];
+const FRAMES = 1381;
+// 프레임을 여러 개의 묶음 파일로 나눔 (깃허브 웹 업로드 1개 파일 25MB 제한). 묶음 파일 목록·크기는 묶을 때 채움
+const FRAME_PACK = {"pc": [{"name": "nano3x_r_pc_0.bin", "size": 8981203}, {"name": "nano3x_r_pc_1.bin", "size": 9005892}, {"name": "nano3x_r_pc_2.bin", "size": 9001498}, {"name": "nano3x_r_pc_3.bin", "size": 7980639}], "m": [{"name": "nano3x_r_m_0.bin", "size": 8990131}, {"name": "nano3x_r_m_1.bin", "size": 8986488}, {"name": "nano3x_r_m_2.bin", "size": 8977868}, {"name": "nano3x_r_m_3.bin", "size": 8995443}, {"name": "nano3x_r_m_4.bin", "size": 4870708}]};
+const VERSION = '20261120-2';                      // 프레임을 새로 올리면 바꿔야 최신 이미지가 보임
 const sets = { pc: null, m: null };
 const want = () => (innerWidth / innerHeight < 1 ? 'm' : 'pc');
 let cur = want();
@@ -206,32 +209,40 @@ const loadingEl = document.getElementById('loading'), pctEl = document.getElemen
 function showLoading(on) { loadingEl.style.display = on ? 'flex' : 'none'; loadingEl.style.opacity = on ? 1 : 0; }
 function progress(r) { const v = Math.min(100, Math.round(r * 100)); pctEl.textContent = v + '%'; barEl.style.width = v + '%'; }
 
-async function fetchSet(key) {
-  if (sets[key]) return sets[key];
-  let buf = null;
-  for (let tr = 0; tr < 3 && !buf; tr++) {
+async function fetchOne(name, onBytes) {
+  for (let tr = 0; tr < 3; tr++) {
     try {
-      const r = await fetch(FRAME_PACK[key] + '?v=' + VERSION);
+      const r = await fetch(name + '?v=' + VERSION);
       if (!r.ok) throw 0;
-      const total = +r.headers.get('content-length') || PACK_SIZE[key];
       if (r.body && r.body.getReader) {
         const rd = r.body.getReader(), parts = []; let got = 0;
-        for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; if (key === cur) progress(got / total); }
-        buf = new Uint8Array(got); let o = 0; for (const p of parts) { buf.set(p, o); o += p.length; }
-      } else { buf = new Uint8Array(await r.arrayBuffer()); }
-    } catch (e) { buf = null; await new Promise(s => setTimeout(s, 500 * (tr + 1))); }
+        for (;;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); got += value.length; onBytes(value.length); }
+        const buf = new Uint8Array(got); let o = 0; for (const p of parts) { buf.set(p, o); o += p.length; }
+        return buf;
+      }
+      const buf = new Uint8Array(await r.arrayBuffer()); onBytes(buf.length); return buf;
+    } catch (e) { await new Promise(s => setTimeout(s, 500 * (tr + 1))); }
   }
-  if (!buf) throw new Error('load');
-  const hl = new DataView(buf.buffer).getUint32(0, true);
-  const idx = JSON.parse(new TextDecoder().decode(buf.subarray(4, 4 + hl)));
-  const base = 4 + hl;
-  const out = idx.map(([o, n]) => new Blob([buf.subarray(base + o, base + o + n)], { type: 'image/webp' }));
+  throw new Error('load');
+}
+async function fetchSet(key) {
+  if (sets[key]) return sets[key];
+  const packs = FRAME_PACK[key], total = packs.reduce((a, p) => a + p.size, 0);
+  let got = 0;
+  const bufs = await Promise.all(packs.map(p => fetchOne(p.name, n => { got += n; if (key === cur) progress(got / total); })));
+  const out = [];
+  for (const buf of bufs) {
+    const hl = new DataView(buf.buffer).getUint32(0, true);
+    const idx = JSON.parse(new TextDecoder().decode(buf.subarray(4, 4 + hl)));
+    const base = 4 + hl;
+    for (const [o, n] of idx) out.push(new Blob([buf.subarray(base + o, base + o + n)], { type: 'image/webp' }));
+  }
   if (key === cur) progress(1);
   sets[key] = out; return out;
 }
 
 // 화면에 그릴 때만 압축을 풀고, 최근 것만 기억 (휴대폰 메모리 보호)
-const LIMIT = MOBILE ? 10 : 18;
+const LIMIT = MOBILE ? 16 : 30;
 const bmp = new Map();                               // 'pc:12' → 풀린 이미지
 const pending = new Map();
 function decode(key, i) {
@@ -255,29 +266,37 @@ const stage = document.getElementById('stage');
 const cv = document.createElement('canvas'); stage.appendChild(cv);
 const ctx = cv.getContext('2d');
 let W = 1, H = 1, DPR = 1, lastDrawn = null;
-function drawCover(img, alpha) {
-  const iw = img.width, ih = img.height, s = Math.max(cv.width / iw, cv.height / ih);
+// 멈춘 화면에서 마우스에 따라 살짝 움직임 (PC만, 장면이 재생될 때는 제자리로 돌아감)
+const MV = { x: 0, y: 0, tx: 0, ty: 0, on: 0 };
+const ZOOM = 1.035, SHIFT = 0.012;
+addEventListener('mousemove', (e) => { MV.tx = (e.clientX / innerWidth) * 2 - 1; MV.ty = (e.clientY / innerHeight) * 2 - 1; });
+document.addEventListener('mouseleave', () => { MV.tx = 0; MV.ty = 0; });
+function drawCover(img) {
+  const iw = img.width, ih = img.height, s = Math.max(cv.width / iw, cv.height / ih) * (1 + (ZOOM - 1) * MV.on);
   const dw = iw * s, dh = ih * s;
-  ctx.globalAlpha = alpha;
-  ctx.drawImage(img, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
-  ctx.globalAlpha = 1;
+  const ox = -MV.x * SHIFT * cv.width * MV.on, oy = -MV.y * SHIFT * cv.height * MV.on;
+  ctx.drawImage(img, (cv.width - dw) / 2 + ox, (cv.height - dh) / 2 + oy, dw, dh);
+}
+function frameIndex(p) {
+  const i = Math.min(4, Math.floor(p));
+  return Math.min(FRAMES - 1, Math.round(SEG_S[i] + (p - i) * SEG_N[i]));
 }
 function drawFrame(p, dir) {
   if (!sets[cur]) return;
-  const f = clamp01(p / 5) * (FRAMES - 1);
-  const i0 = Math.floor(f), i1 = Math.min(FRAMES - 1, i0 + 1), a = f - i0;
-  // 진행 방향으로 몇 장 미리 풀어 둠
-  for (let k = -2; k <= 4; k++) { const j = i0 + k * (dir < 0 ? -1 : 1); if (j >= 0 && j < FRAMES) decode(cur, j); }
-  const b0 = decode(cur, i0), b1 = a > 0.02 ? decode(cur, i1) : null;
-  if (!b0) { if (lastDrawn) drawCover(lastDrawn, 1); return; }
-  drawCover(b0, 1);
-  if (b1) drawCover(b1, a);                          // 두 장 사이를 부드럽게 섞음
-  lastDrawn = b0;
+  const i0 = frameIndex(p), d = dir < 0 ? -1 : 1;
+  // 진행 방향으로 미리 풀어 둠 (한 화면에 한 장씩, 섞지 않음)
+  for (let k = -2; k <= 12; k++) { const j = i0 + k * d; if (j >= 0 && j < FRAMES) decode(cur, j); }
+  let b = decode(cur, i0);
+  if (!b) { for (let k = 1; k <= 6 && !b; k++) { const j = i0 - k * d; if (j >= 0 && j < FRAMES && bmp.has(cur + ':' + j)) b = bmp.get(cur + ':' + j); } }
+  if (!b) b = lastDrawn;
+  if (!b) return;
+  drawCover(b);
+  lastDrawn = b;
 }
 
 // ------------------------------------------------------------------ 장면 단위 재생 (스크롤 한 번 = 다음 장면 자동 재생)
 // 장면 0~5 = 진행도 0~5에서 멈춰 문구를 보여줌. 장면 6 = 구매 영역
-const DUR = [2.2, 2.2, 2.8, 2.8, 2.4, 1.8];         // 장면 i → i+1 재생 시간(초)
+const DUR = [2.9, 2.7, 6.4, 6.4, 4.6, 1.8];         // 장면 i → i+1 재생 시간(초) - 원본과 동일
 const BACK = 0.55;
 function travel(t) {
   const ta = 0.24, vm = 1 / (1 - ta);
@@ -345,7 +364,7 @@ const fader = document.getElementById('fader');
 function jumpTo(ch) {
   if (!ready || anim || jump || ch === chapter) return;
   jump = { to: ch, t0: performance.now(), swapped: false };
-  decode(cur, Math.round(clamp01(ch / 5) * (FRAMES - 1)));
+  decode(cur, frameIndex(Math.min(ch, 5)));
 }
 function stepJump(now) {
   if (!jump) return;
@@ -406,6 +425,9 @@ function frame(now) {
   stepAnim(now); stepJump(now);
   const p = P, dir = p - prevP; prevP = p;
   const portrait = W / H < 1;
+  const rest = ready && !anim && !jump && chapter <= 5 && !MOBILE;
+  MV.on += ((rest ? 1 : 0) - MV.on) * 0.06;
+  MV.x += (MV.tx - MV.x) * 0.05; MV.y += (MV.ty - MV.y) * 0.05;
   drawFrame(Math.min(p, 5), dir || (anim ? anim.to - anim.from : 1));
   const po = smooth(5.35, 6.0, p);
   purchase.style.setProperty('--o', po.toFixed(3)); purchase.classList.toggle('on', po > 0.9);
@@ -437,8 +459,8 @@ async function start() {
   try {
     await fetchSet(key);
     if (tok !== startToken) return;
-    const i = Math.round(clamp01(Math.min(P, 5) / 5) * (FRAMES - 1));
-    await Promise.all([decodeNow(key, i), decodeNow(key, Math.min(FRAMES - 1, i + 1)), decodeNow(key, Math.min(FRAMES - 1, i + 2))]);
+    const i = frameIndex(Math.min(P, 5));
+    await Promise.all([0, 1, 2, 3, 4, 5].map(k => decodeNow(key, Math.min(FRAMES - 1, i + k))));
     if (tok !== startToken) return;
     ready = true;
     loadingEl.style.opacity = 0; setTimeout(() => { if (ready) loadingEl.style.display = 'none'; }, 700);
